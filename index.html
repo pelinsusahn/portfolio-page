@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Pelinsu Sahin portfolio: architecture, computation, materials, and visual systems."
+    />
+    <title>Pelinsu Sahin</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <svg class="bubble-defs" aria-hidden="true" focusable="false" width="0" height="0">
+      <defs>
+        <filter id="bubble-distort" x="-28%" y="-28%" width="156%" height="156%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.012 0.018"
+            numOctaves="2"
+            seed="8"
+            result="noise"
+          >
+            <animate
+              attributeName="baseFrequency"
+              dur="3.2s"
+              repeatCount="indefinite"
+              values="0.012 0.018;0.02 0.014;0.013 0.022;0.012 0.018"
+            />
+          </feTurbulence>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="B">
+            <animate
+              attributeName="scale"
+              dur="2.4s"
+              repeatCount="indefinite"
+              values="12;26;16;30;12"
+            />
+          </feDisplacementMap>
+        </filter>
+      </defs>
+    </svg>
+
+    <header class="top-header">
+      <button class="top-mark" id="nav-home" type="button" aria-label="Back to top">
+        <img src="./683f4c313a7291cd436a347d_6578266.webp" alt="Pelinsu Sahin logo" />
+      </button>
+
+      <nav class="top-nav" aria-label="Primary navigation">
+        <button class="top-link" id="nav-home-link" type="button">Home</button>
+        <button class="top-link" id="nav-works" type="button">Works</button>
+        <button class="top-link" id="nav-about" type="button">About</button>
+        <a class="top-link" href="#" id="nav-cv">CV</a>
+        <button class="top-link" id="nav-contact" type="button">Contact</button>
+        <a class="top-link" href="#" id="nav-pdf">Portfolio PDF</a>
+      </nav>
+    </header>
+
+    <div class="hero-bubble-stage" id="hero-bubble-stage">
+      <div class="hero-bubble" id="hero-bubble" aria-hidden="true">
+        <div class="bubble-crease bubble-crease-a"></div>
+        <div class="bubble-crease bubble-crease-b"></div>
+      </div>
+    </div>
+
+    <main class="story-scene" id="story-scene">
+      <div class="story-guides" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <div class="story-sticky">
+        <div class="hero-stack">
+          <p class="hero-role">Architect</p>
+          <h1 class="hero-name">Pelinsu Sahin</h1>
+        </div>
+
+        <aside class="hero-aside">
+          <p>I design systems, spaces, materials, and the occasional weird thing.</p>
+          <div class="hero-scroll-cue" aria-hidden="true">
+            <span class="hero-scroll-arrow"></span>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <section class="projects-section" id="projects-section" aria-label="Selected works">
+      <div class="projects-grid-shell">
+        <section class="projects-grid" id="projects-grid" aria-label="Projects">
+          <h2 class="sr-only">Selected works</h2>
+          <div class="projects-gap-cell" id="projects-gap-cell" aria-hidden="true"></div>
+        </section>
+      </div>
+    </section>
+
+    <div class="overlay is-hidden" id="overlay">
+      <div class="overlay-backdrop" id="overlay-backdrop"></div>
+
+      <section class="project-window is-hidden" id="project-modal" aria-modal="true" role="dialog">
+        <div class="window-bar">
+          <span id="modal-titlebar">Project</span>
+          <button class="window-close" data-close-overlay type="button">Close</button>
+        </div>
+        <div class="project-window-content" id="modal-content"></div>
+      </section>
+
+      <section class="side-window is-hidden" id="about-panel" aria-modal="true" role="dialog">
+        <div class="window-bar">
+          <span>About</span>
+          <button class="window-close" data-close-overlay type="button">Close</button>
+        </div>
+        <div class="side-window-content">
+          <div class="side-copy">
+            <p class="meta-line">Profile</p>
+            <h2>AN ARCHITECT WORKING BETWEEN SPATIAL DESIGN, SYSTEMS, MATERIALS, AND VISUAL STORYTELLING.</h2>
+            <p>
+              I am an architect working between spatial design, computational
+              systems, material experiments, and visual storytelling. My work often
+              starts from a simple question: what happens when architecture is
+              treated less like a final object and more like a system that can
+              learn, deform, fail, adapt, or be reused?
+            </p>
+            <p>
+              I move between prototypes, drawings, datasets, machines, and
+              speculative worlds because they are different ways of testing
+              architectural ideas, not separate disciplines.
+            </p>
+          </div>
+
+          <div class="side-meta">
+            <div>
+              <span class="meta-line">Location</span>
+              <p>Barcelona / Istanbul</p>
+            </div>
+            <div>
+              <span class="meta-line">Background</span>
+              <p>Architecture + Computational Design</p>
+            </div>
+            <div>
+              <span class="meta-line">Tools</span>
+              <p>Rhino, Grasshopper, Python, PyTorch Geometric, Houdini, D5, Adobe Suite</p>
+            </div>
+            <div>
+              <span class="meta-line">Current Status</span>
+              <p>Finishing MAA at IAAC Barcelona</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="side-window cv-window is-hidden" id="cv-panel" aria-modal="true" role="dialog">
+        <div class="window-bar">
+          <span>CV</span>
+          <a class="window-close" href="./CV_Pelinsu_Sahin.pdf" target="_blank" rel="noreferrer">Open PDF</a>
+        </div>
+        <div class="cv-window-content">
+          <article class="cv-page" aria-label="Pelinsu Sahin CV">
+            <header class="cv-page-header">
+              <h2>Pelinsu Sahin</h2>
+            </header>
+
+            <section class="cv-block">
+              <h3 class="cv-section-label">Work Experience</h3>
+
+              <article class="cv-item">
+                <div class="cv-item-head">
+                  <strong>b720 Ferm&iacute;n V&aacute;zquez Arquitectos</strong>
+                  <span>Barcelona / Spain</span>
+                </div>
+                <div class="cv-item-subhead">
+                  <span>Architectural Intern</span>
+                  <span>01.2026 - Present</span>
+                </div>
+                <ul class="cv-bullets">
+                  <li>Contribute to international competition projects from concept to submission, developing parametric models and design iterations under tight deadlines.</li>
+                  <li>Produced visual and technical deliverables, supporting final competition presentations.</li>
+                  <li>Developed parametric facade systems in Rhino &amp; Grasshopper, generating multiple design iterations to evaluate geometric and performance-driven outcomes.</li>
+                </ul>
+              </article>
+
+              <article class="cv-item">
+                <div class="cv-item-head">
+                  <strong>EMBA Architects</strong>
+                  <span>Istanbul / Turkey</span>
+                </div>
+                <div class="cv-item-subhead">
+                  <span>Junior Architect</span>
+                  <span>01.2023 - 05.2024</span>
+                </div>
+                <ul class="cv-bullets">
+                  <li>Developed parametric competition proposals in Rhino &amp; Grasshopper, producing 5-10 design iterations per project within short deadlines.</li>
+                  <li>Produced high-quality visualizations using Enscape and D5, supporting submissions and presentations.</li>
+                  <li>Coordinated workflows between Rhino and Revit environments, streamlining transition from concept design to BIM development.</li>
+                </ul>
+              </article>
+
+              <article class="cv-item">
+                <div class="cv-item-head">
+                  <strong>Melike Alt&#305;n&#305;&#351;&#305;k Architects</strong>
+                  <span>Istanbul / Turkey</span>
+                </div>
+                <div class="cv-item-subhead">
+                  <span>Architectural Intern</span>
+                  <span>06.2022 - 12.2022</span>
+                </div>
+                <ul class="cv-bullets">
+                  <li>Developed parametric facade systems in Grasshopper, producing multiple geometric configurations for design evaluation.</li>
+                  <li>Created fabrication-ready models for 3D printing, translating computational geometry into physical prototypes.</li>
+                </ul>
+              </article>
+            </section>
+
+            <section class="cv-block">
+              <h3 class="cv-section-label">Education</h3>
+
+              <article class="cv-row">
+                <div class="cv-row-head">
+                  <strong>Institute for Advanced Architecture of Catalonia (IAAC)</strong>
+                  <span>Barcelona / Spain</span>
+                </div>
+                <div class="cv-row-body">
+                  <span>Master of Advanced Architecture (GPA 8.9), NEBA Scholarship</span>
+                  <span>2024 - 2026</span>
+                </div>
+              </article>
+
+              <article class="cv-row">
+                <div class="cv-row-head">
+                  <strong>Istanbul Technical University</strong>
+                  <span>Istanbul / Turkey</span>
+                </div>
+                <div class="cv-row-body">
+                  <span>Bachelor of Architecture (GPA 3.48), Dean&apos;s List</span>
+                  <span>2017 - 2023</span>
+                </div>
+              </article>
+            </section>
+
+            <section class="cv-block">
+              <h3 class="cv-section-label">Skills</h3>
+
+              <div class="cv-skill-row">
+                <strong>3D Modelling</strong>
+                <span>Rhino / Grasshopper (Advanced) | Revit (Intermediate) | Blender (Advanced) | Houdini</span>
+              </div>
+              <div class="cv-skill-row">
+                <strong>Media / Design</strong>
+                <span>Adobe Suite (Advanced) | Enscape (Intermediate) | D5 (Intermediate)</span>
+              </div>
+              <div class="cv-skill-row">
+                <strong>Language</strong>
+                <span>Turkish (Native) | English (Full Professional Proficiency) | Italian (Basic) | Spanish (Basic)</span>
+              </div>
+            </section>
+
+            <section class="cv-block">
+              <h3 class="cv-section-label">Achievements</h3>
+
+              <div class="cv-award-row">
+                <span>Festival Llum BCN 2026 (Participant)</span>
+                <span>2026</span>
+              </div>
+              <div class="cv-award-row">
+                <span>Selected Project for Tallinn Accelerator Program 2025 (SecondMatter)</span>
+                <span>2025</span>
+              </div>
+              <div class="cv-award-row">
+                <span>Special Award in Digital Matter Studio IAAC (SecondMatter)</span>
+                <span>2025</span>
+              </div>
+              <div class="cv-award-row">
+                <span>Conc&eacute;ntrico | Finalist</span>
+                <span>2024</span>
+              </div>
+              <div class="cv-award-row">
+                <span>Archiprix Turkey | Jury Special Award</span>
+                <span>2024</span>
+              </div>
+              <div class="cv-award-row">
+                <span>Hacking the City Competition | Finalist</span>
+                <span>2023</span>
+              </div>
+              <div class="cv-award-row">
+                <span>MimED Project Awards for Architecture Students | Encouragement Award</span>
+                <span>2022</span>
+              </div>
+              <div class="cv-award-row">
+                <span>&Ccedil;EDBIK Sustainable Idea Competition | Honorable Mention</span>
+                <span>2022</span>
+              </div>
+              <div class="cv-award-row">
+                <span>&Ccedil;uhadaro&#287;lu Student Project Competition | Honorable Mention</span>
+                <span>2021</span>
+              </div>
+            </section>
+          </article>
+        </div>
+      </section>
+
+      <section class="side-window is-hidden" id="contact-panel" aria-modal="true" role="dialog">
+        <div class="window-bar">
+          <span>Contact</span>
+          <button class="window-close" data-close-overlay type="button">Close</button>
+        </div>
+        <div class="side-window-content contact-window-content">
+          <div class="side-copy">
+            <p class="meta-line">Open panel</p>
+            <h2>CONTACT, LINKS, AND THE FUTURE PDF.</h2>
+            <p>
+              These are placeholders for now. Swap them with your real email,
+              socials, and downloadable portfolio when you're ready.
+            </p>
+          </div>
+
+          <div class="contact-list">
+            <a class="contact-item" href="mailto:your.email@example.com">
+              <span class="meta-line">Email</span>
+              <strong>your.email@example.com</strong>
+              <span>Open</span>
+            </a>
+            <a class="contact-item" href="https://instagram.com" target="_blank" rel="noreferrer">
+              <span class="meta-line">Instagram</span>
+              <strong>@yourhandle</strong>
+              <span>Open</span>
+            </a>
+            <a class="contact-item" href="https://linkedin.com" target="_blank" rel="noreferrer">
+              <span class="meta-line">LinkedIn</span>
+              <strong>linkedin.com/in/yourprofile</strong>
+              <span>Open</span>
+            </a>
+            <a class="contact-item" href="#" id="contact-pdf-link">
+              <span class="meta-line">Download PDF</span>
+              <strong>replace with final portfolio pdf</strong>
+              <span>Open</span>
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
