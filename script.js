@@ -1,10 +1,10 @@
 const seedProjectRows = [
   ["TerraFlux", "TerraFlux.jpg", "2025", "Generative World", "Systems"],
   ["SecondMatter", "SecondMatter.jpg", "2025", "Material System", "Matter"],
-  ["One Sun", "one sun.jpg", "2025", "Speculative Project", "Worlds"],
-  ["Waiting for Migration", "Waiting for Migration.jpg", "2025", "Speculative Project", "Worlds"],
+  ["One Sun", "one sun.jpg", "2025", "Competition Project", "Worlds"],
+  ["Waiting for Migration", "Waiting for Migration.jpg", "2025", "Competition Project", "Worlds"],
   ["922-Fabricated Surface", "922-Fabricated Surface.jpg", "2024", "Visual Study", "Images"],
-  ["After Everyone Left", "After Everyone Left.jpg", "2025", "Speculative Project", "Worlds"],
+  ["After Everyone Left", "After Everyone Left.jpg", "2025", "Competition Project", "Worlds"],
   ["Commune for Elderly", "Commune for Elderly.png", "2024", "Housing Proposal", "Architecture"],
   ["Corrrupted Parliment", "Corrrupted Parliment.jpg", "2024", "Speculative Institution", "Worlds"],
   ["Hospital Clinic", "Hospital Clinic.png", "2023", "Professional Work", "Architecture"],
@@ -425,7 +425,11 @@ const seedProjects = seedProjectRows.map(([title, fileName, year, type, category
   const coverFileName = title === "Housing in Kadikoy" ? "Housing in kad\u0131k\u00f6y.png" : fileName;
   const thumbnail = `./projects/${encodeURIComponent(coverFileName)}`;
   const webMedia = (projectWebMediaBySlug[slug] || []).map(mediaPath);
-  const media = webMedia.length ? webMedia : [thumbnail, thumbnail];
+  const media = webMedia.length
+    ? slug === "one-sun"
+      ? [thumbnail, ...webMedia]
+      : webMedia
+    : [thumbnail, thumbnail];
   const text = buildProjectText(slug, title, type, category);
   return {
     slug,
@@ -505,8 +509,6 @@ const navWorksButton = document.getElementById("nav-works");
 const navAboutButton = document.getElementById("nav-about");
 const navContactButton = document.getElementById("nav-contact");
 const navCvLink = document.getElementById("nav-cv");
-const navPdfLink = document.getElementById("nav-pdf");
-const contactPdfLink = document.getElementById("contact-pdf-link");
 const overlay = document.getElementById("overlay");
 const overlayBackdrop = document.getElementById("overlay-backdrop");
 const projectModal = document.getElementById("project-modal");
@@ -810,13 +812,6 @@ navContactButton.addEventListener("click", () => openOverlay(contactPanel));
 navCvLink.addEventListener("click", (event) => {
   event.preventDefault();
   openOverlay(cvPanel);
-});
-
-[navPdfLink, contactPdfLink].forEach((link) => {
-  link.addEventListener("click", (event) => {
-    event.preventDefault();
-    openOverlay(contactPanel);
-  });
 });
 
 if (heroBubble && bubbleStage) {
