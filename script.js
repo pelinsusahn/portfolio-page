@@ -804,6 +804,38 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function handlePortfolioRoute(hashValue) {
+  const route = (hashValue || window.location.hash || "").replace(/^#/, "");
+
+  if (!route) {
+    return;
+  }
+
+  if (route === "works" || route === "projects-section") {
+    window.setTimeout(scrollToWorks, 40);
+    return;
+  }
+
+  if (route === "about") {
+    window.setTimeout(() => openOverlay(aboutPanel), 40);
+    return;
+  }
+
+  if (route === "cv") {
+    window.setTimeout(() => openOverlay(cvPanel), 40);
+    return;
+  }
+
+  if (route === "contact") {
+    window.setTimeout(() => openOverlay(contactPanel), 40);
+    return;
+  }
+
+  if (route === "home") {
+    window.setTimeout(scrollToTop, 40);
+  }
+}
+
 navHomeButton.addEventListener("click", scrollToTop);
 navHomeLink.addEventListener("click", scrollToTop);
 navWorksButton.addEventListener("click", scrollToWorks);
@@ -859,6 +891,10 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeOverlay();
   }
+});
+
+window.addEventListener("hashchange", () => {
+  handlePortfolioRoute(window.location.hash);
 });
 
 let sceneTicking = false;
@@ -952,9 +988,15 @@ if ("scrollRestoration" in history) {
 }
 
 function resetOpeningState() {
-  window.scrollTo(0, 0);
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
+  const route = window.location.hash.replace(/^#/, "");
+  const shouldResetScroll = !route || route === "home";
+
+  if (shouldResetScroll) {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }
+
   targetSceneProgress = 0;
   currentSceneProgress = 0;
   renderSceneProgress(0);
@@ -964,6 +1006,7 @@ resetOpeningState();
 window.addEventListener("load", () => {
   window.setTimeout(resetOpeningState, 0);
   window.setTimeout(resetOpeningState, 60);
+  window.setTimeout(() => handlePortfolioRoute(window.location.hash), 120);
 });
 window.addEventListener("pageshow", resetOpeningState);
 
@@ -972,3 +1015,4 @@ document.querySelectorAll(".project-tile").forEach((item) => {
   projectObserver.observe(item);
 });
 resetOpeningState();
+handlePortfolioRoute(window.location.hash);
