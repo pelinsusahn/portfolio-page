@@ -23,6 +23,53 @@ body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+.top-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 16px;
+  background: transparent;
+}
+
+.top-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+
+.top-mark img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.top-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: flex-end;
+}
+
+.top-link {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 12px;
+  transition: color 180ms ease;
+}
+
+.top-header.is-on-light .top-link {
+  color: #0d0d0d;
+}
+
 .scene-stage {
   position: relative;
   width: 100vw;
@@ -46,14 +93,7 @@ body {
 }
 
 .scene-label {
-  position: absolute;
-  top: 22px;
-  left: 28px;
-  z-index: 3;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255, 247, 238, 0.78);
+  display: none;
 }
 
 .scene-content {
@@ -433,6 +473,22 @@ body {
 }
 
 @media (max-width: 720px) {
+  .top-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .top-nav {
+    gap: 10px 14px;
+    justify-content: flex-start;
+  }
+
+  .top-link {
+    font-size: 11px;
+  }
+
   .scene-label {
     top: 16px;
     left: 18px;
@@ -511,6 +567,25 @@ body {
 }
 
 @media (max-width: 560px) {
+  .top-header {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .top-mark,
+  .top-mark img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .top-nav {
+    gap: 8px 12px;
+  }
+
+  .top-link {
+    font-size: 10px;
+  }
+
   .scene-frame {
     height: 100svh;
   }

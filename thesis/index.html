@@ -7,6 +7,20 @@
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
+  <header class="top-header">
+    <a class="top-mark" href="../index.html" aria-label="Back to portfolio home">
+      <img src="../683f4c313a7291cd436a347d_6578266.webp" alt="Pelinsu Sahin logo">
+    </a>
+
+    <nav class="top-nav" aria-label="Portfolio navigation">
+      <a class="top-link" href="../index.html">Home</a>
+      <a class="top-link" href="../index.html#works">Works</a>
+      <a class="top-link" href="../index.html#about">About</a>
+      <a class="top-link" href="../index.html#cv">CV</a>
+      <a class="top-link" href="../index.html#contact">Contact</a>
+    </nav>
+  </header>
+
   <main class="scene-stage">
     <div class="scene-frame">
       <div class="scene-label">Adaptive Topologies</div>
@@ -125,6 +139,7 @@
   <script>
     (function () {
       const storySequence = document.getElementById("story-sequence");
+      const topHeader = document.querySelector(".top-header");
 
       if (!storySequence) {
         return;
@@ -279,6 +294,12 @@
             introCopy.style.transform = `translate3d(${(-introShift).toFixed(2)}px, -50%, 0)`;
           }
         });
+
+        if (topHeader) {
+          const storyTop = storySequence.getBoundingClientRect().top;
+          const headerBottom = topHeader.getBoundingClientRect().bottom;
+          topHeader.classList.toggle("is-on-light", storyTop <= headerBottom);
+        }
       }
 
       updatePanels();
