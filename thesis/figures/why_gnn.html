@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adaptive Topologies — Why GNN?</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #ffffff;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .scene { position: relative; width: 100vw; height: 100vh; }
+
+  svg.layer {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    overflow: visible;
+  }
+
+  /* Structure line classes */
+  .s-sil   { fill:none; stroke:#1e1e1e; stroke-width:0.75; stroke-linecap:square; stroke-linejoin:miter; vector-effect:non-scaling-stroke; }
+  .s-prof  { fill:none; stroke:#2a2a2a; stroke-width:0.28; stroke-linecap:square; vector-effect:non-scaling-stroke; }
+  .s-cl    { fill:none; stroke:#b0b0b0; stroke-width:0.38; stroke-linecap:square; vector-effect:non-scaling-stroke; }
+  .s-web   { fill:none; stroke:#2a2a2a; stroke-width:0.22; stroke-linecap:butt;  vector-effect:non-scaling-stroke; }
+  .s-joint { fill:none; stroke:#2a2a2a; stroke-width:0.28; stroke-linecap:butt;  vector-effect:non-scaling-stroke; }
+  .s-outer { fill:none; stroke:#111111; stroke-width:1.55; stroke-linecap:square; stroke-linejoin:miter; vector-effect:non-scaling-stroke; }
+
+  /* Graph */
+  .g-edge { fill:none; transition: stroke 0.38s ease, stroke-width 0.38s ease; }
+  .g-node { transition: fill 0.38s ease; }
+
+  /* Caption */
+  .caption {
+    position: absolute; left: 32px; bottom: 32px;
+    pointer-events: none; line-height: 1.75;
+  }
+  #capTitle {
+    display: block; font-size: 11px; font-weight: 500;
+    letter-spacing: 0.03em; color: #111;
+    transition: opacity 0.5s ease;
+  }
+  #capSub {
+    display: block; font-size: 10px; font-weight: 400;
+    letter-spacing: 0.02em; color: #999;
+    transition: opacity 0.5s ease;
+  }
+
+  /* Top label */
+  .top-label {
+    position: absolute; top: 24px; left: 32px;
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #ccc; pointer-events: none;
+  }
+  .top-label strong { color: #888; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="scene">
+
+  <div class="top-label">
+    <strong>Adaptive Topologies</strong>&nbsp;&nbsp;·&nbsp;&nbsp;06&nbsp;&nbsp;·&nbsp;&nbsp;Why Graph Neural Networks?
+  </div>
+
+  <!-- Layer 1: structural drawing -->
+  <svg class="layer" id="svgStruct" viewBox="0 0 900 620" aria-hidden="true">
+    <g id="gStruct"></g>
+  </svg>
+
+  <!-- Layer 2: graph -->
+  <svg class="layer" id="svgGraph" viewBox="0 0 900 620" style="opacity:0;" aria-hidden="true">
+    <defs>
+      <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="7" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="glowS" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="4" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <g id="gEdges"></g>
+    <g id="gNodes"></g>
+  </svg>
+
+  <div class="caption">
+    <strong id="capTitle">Rectangular moment frame</strong>
+    <span id="capSub">6 stories &nbsp;·&nbsp; 5 × 4 bays &nbsp;·&nbsp; IPE sections</span>
+  </div>
+
+</div>
+<script>
+// ─────────────────────────────────────────────────────────────
+// FRAME
+// ─────────────────────────────────────────────────────────────
+const STORY_H = 3.5;
+const AX = { px: 1.0, py: 0.58, vt: 1.14 };
+const CANVAS = { x0: 80, x1: 820, y0: 44, y1: 568 };
+const F = { stories: 6, bayX: 5, bayY: 4, sX: 6, sY: 6 };
+
+const COL_W = 6.2;  // column IPE flange spread (screen px)
+const BM_W  = 5.4;  // beam IPE flange spread (screen px)
+
+// ─────────────────────────────────────────────────────────────
+// PROJECTION
+// ─────────────────────────────────────────────────────────────
+function rawPt(ix, iy, lv) {
+  const cx = ix * F.sX - F.bayX * F.sX / 2;
+  const cy = iy * F.sY - F.bayY * F.sY / 2;
+  return {
+    x: (cx - cy) * AX.px,
+    y: (cx + cy) * AX.py - lv * STORY_H * AX.vt
+  };
+}
+
+function makeProject() {
+  const pts = [];
+  for (let lv = 0; lv <= F.stories; lv++)
+    for (let ix = 0; ix <= F.bayX; ix++)
+      for (let iy = 0; iy <= F.bayY; iy++)
+        pts.push(rawPt(ix, iy, lv));
+  const b = pts.reduce((b, p) => ({
+    x0: Math.min(b.x0, p.x), x1: Math.max(b.x1, p.x),
+    y0: Math.min(b.y0, p.y), y1: Math.max(b.y1, p.y)
+  }), { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity });
+  const tw = CANVAS.x1 - CANVAS.x0, th = CANVAS.y1 - CANVAS.y0;
+  const sc = Math.min(tw / (b.x1 - b.x0), th / (b.y1 - b.y0));
+  const ox = CANVAS.x0 + (tw - (b.x1 - b.x0) * sc) / 2 - b.x0 * sc;
+  const oy = CANVAS.y0 + (th - (b.y1 - b.y0) * sc) / 2 - b.y0 * sc;
+  return (ix, iy, lv) => {
+    const p = rawPt(ix, iy, lv);
+    return { x: p.x * sc + ox, y: p.y * sc + oy };
+  };
+}
+const project = makeProject();
+
+const f2 = n => n.toFixed(2);
+
+// ─────────────────────────────────────────────────────────────
+// MEMBER DRAWING PRIMITIVES
+// ─────────────────────────────────────────────────────────────
+
+// Perpendicular normal from a→b
+function perp(a, b, half) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const len = Math.hypot(dx, dy) || 1e-4;
+  return { nx: -dy / len * half, ny: dx / len * half };
+}
+
+// Filled white polygon — occludes elements behind this member
+function memberOcclude(a, b, sw) {
+  const { nx, ny } = perp(a, b, sw / 2);
+  const pts = [
+    `${f2(a.x+nx)},${f2(a.y+ny)}`,
+    `${f2(b.x+nx)},${f2(b.y+ny)}`,
+    `${f2(b.x-nx)},${f2(b.y-ny)}`,
+    `${f2(a.x-nx)},${f2(a.y-ny)}`
+  ].join(' ');
+  return `<polygon points="${pts}" fill="white" stroke="none"/>`;
+}
+
+// Two parallel flange lines (the visible IPE profile)
+function memberFlanges(a, b, sw, cls) {
+  const { nx, ny } = perp(a, b, sw / 2);
+  return `<line class="${cls}" x1="${f2(a.x+nx)}" y1="${f2(a.y+ny)}" x2="${f2(b.x+nx)}" y2="${f2(b.y+ny)}"/>`
+       + `<line class="${cls}" x1="${f2(a.x-nx)}" y1="${f2(a.y-ny)}" x2="${f2(b.x-nx)}" y2="${f2(b.y-ny)}"/>`;
+}
+
+// Web lines at both member ends (cross-section cut)
+function memberEndCaps(a, b, sw) {
+  const { nx, ny } = perp(a, b, sw / 2);
+  return `<line class="s-web" x1="${f2(a.x+nx)}" y1="${f2(a.y+ny)}" x2="${f2(a.x-nx)}" y2="${f2(a.y-ny)}"/>`
+       + `<line class="s-web" x1="${f2(b.x+nx)}" y1="${f2(b.y+ny)}" x2="${f2(b.x-nx)}" y2="${f2(b.y-ny)}"/>`;
+}
+
+// Centerline (for interior members)
+function centerline(a, b) {
+  return `<line class="s-cl" x1="${f2(a.x)}" y1="${f2(a.y)}" x2="${f2(b.x)}" y2="${f2(b.y)}"/>`;
+}
+
+// Silhouette stroke on exterior members (under the profile)
+function silhouetteLine(a, b) {
+  return `<line class="s-sil" x1="${f2(a.x)}" y1="${f2(a.y)}" x2="${f2(b.x)}" y2="${f2(b.y)}"/>`;
+}
+
+// Joint: small white disc + crosshair ticks
+function jointMark(p) {
+  const R = 3.8;
+  return `<circle cx="${f2(p.x)}" cy="${f2(p.y)}" r="${R}" fill="white" stroke="none"/>`
+       + `<line class="s-joint" x1="${f2(p.x-R)}" y1="${f2(p.y)}" x2="${f2(p.x+R)}" y2="${f2(p.y)}"/>`
+       + `<line class="s-joint" x1="${f2(p.x)}" y1="${f2(p.y-R)}" x2="${f2(p.x)}" y2="${f2(p.y+R)}"/>`;
+}
+
+// Outer silhouette — convex hull of the building mass, offset outward by half the
+// section width so the stroke sits on the outer face of the members, not the centreline.
+function outerSilhouette() {
+  const centreline = [
+    project(0,       0,       F.stories),  // front-left roof  (topmost)
+    project(F.bayX,  0,       F.stories),  // front-right roof
+    project(F.bayX,  0,       0),          // front-right ground (rightmost)
+    project(F.bayX,  F.bayY,  0),          // back-right ground  (bottommost)
+    project(0,       F.bayY,  0),          // back-left ground   (leftmost)
+    project(0,       F.bayY,  F.stories),  // back-left roof
+  ];
+
+  // Expand the polygon outward by OFFSET pixels using per-vertex miter geometry.
+  // The polygon is CW in SVG space, so the outward normal of direction (dx,dy) is (dy,−dx).
+  const OFFSET = COL_W / 2 + 0.4;
+  const n = centreline.length;
+  const expanded = centreline.map((curr, i) => {
+    const prev = centreline[(i - 1 + n) % n];
+    const next = centreline[(i + 1) % n];
+
+    const d1x = curr.x - prev.x, d1y = curr.y - prev.y;
+    const l1  = Math.hypot(d1x, d1y) || 1e-6;
+    const d2x = next.x - curr.x,  d2y = next.y - curr.y;
+    const l2  = Math.hypot(d2x, d2y) || 1e-6;
+
+    // Outward unit normals (right-perp for CW polygon)
+    const n1x =  d1y / l1,  n1y = -d1x / l1;
+    const n2x =  d2y / l2,  n2y = -d2x / l2;
+
+    // Miter offset: curr + 2 * OFFSET * (n1+n2) / |n1+n2|²
+    const bx = n1x + n2x, by = n1y + n2y;
+    const bl2 = bx * bx + by * by;
+    if (bl2 < 0.001) return { x: curr.x + n1x * OFFSET, y: curr.y + n1y * OFFSET };
+    return { x: curr.x + 2 * OFFSET * bx / bl2,
+             y: curr.y + 2 * OFFSET * by / bl2 };
+  });
+
+  const pts = expanded.map(p => `${f2(p.x)},${f2(p.y)}`).join(' ');
+  return `<polygon points="${pts}" class="s-outer"/>`;
+}
+
+// ─────────────────────────────────────────────────────────────
+// BUILD STRUCTURE  (painter's algorithm — back to front)
+// ─────────────────────────────────────────────────────────────
+function buildStructure() {
+  const members = []; // { depth, markup }
+
+  const isExtV  = (ix, iy) => ix === 0 || ix === F.bayX || iy === 0 || iy === F.bayY;
+  const isExtHx = iy => iy === 0 || iy === F.bayY;
+  const isExtHy = ix => ix === 0 || ix === F.bayX;
+
+  function pushMember(a, b, sw, exterior) {
+    const depth = (a.y + b.y) / 2;
+    const profCls = exterior ? 's-prof' : 's-prof';   // same class, colour is shared
+    let markup = memberOcclude(a, b, sw * 1.08);      // white fill (slightly wider for clean cover)
+    if (!exterior) markup += centerline(a, b);        // interior only: faint centreline
+    markup += memberFlanges(a, b, sw, profCls);
+    markup += memberEndCaps(a, b, sw);
+    members.push({ depth, markup });
+  }
+
+  // Columns
+  for (let ix = 0; ix <= F.bayX; ix++)
+    for (let iy = 0; iy <= F.bayY; iy++)
+      for (let lv = 0; lv < F.stories; lv++) {
+        const a = project(ix, iy, lv), b = project(ix, iy, lv + 1);
+        pushMember(a, b, COL_W, isExtV(ix, iy));
+      }
+
+  // Beams x-direction
+  for (let lv = 1; lv <= F.stories; lv++)
+    for (let ix = 0; ix < F.bayX; ix++)
+      for (let iy = 0; iy <= F.bayY; iy++) {
+        const a = project(ix, iy, lv), b = project(ix + 1, iy, lv);
+        pushMember(a, b, BM_W, isExtHx(iy));
+      }
+
+  // Beams y-direction
+  for (let lv = 1; lv <= F.stories; lv++)
+    for (let ix = 0; ix <= F.bayX; ix++)
+      for (let iy = 0; iy < F.bayY; iy++) {
+        const a = project(ix, iy, lv), b = project(ix, iy + 1, lv);
+        pushMember(a, b, BM_W, isExtHy(ix));
+      }
+
+  // Sort back → front (ascending screen y = further from viewer in this projection)
+  members.sort((a, b) => a.depth - b.depth);
+
+  // Joints (depth-sorted, drawn after member lines so crosshairs appear on top)
+  const joints = [];
+  for (let lv = 0; lv <= F.stories; lv++)
+    for (let ix = 0; ix <= F.bayX; ix++)
+      for (let iy = 0; iy <= F.bayY; iy++) {
+        const p = project(ix, iy, lv);
+        joints.push({ depth: p.y, markup: jointMark(p) });
+      }
+  joints.sort((a, b) => a.depth - b.depth);
+
+  return members.map(m => m.markup).join('')
+       + joints.map(j => j.markup).join('')
+       + outerSilhouette();     // single thick outline drawn last (always on top)
+}
+
+// ─────────────────────────────────────────────────────────────
+// GRAPH DATA
+// ─────────────────────────────────────────────────────────────
+function buildGraph() {
+  const nodes = [], edges = [], idx = {};
+
+  for (let lv = 0; lv <= F.stories; lv++)
+    for (let ix = 0; ix <= F.bayX; ix++)
+      for (let iy = 0; iy <= F.bayY; iy++) {
+        const key = `${ix},${iy},${lv}`;
+        idx[key] = nodes.length;
+        const p = project(ix, iy, lv);
+        nodes.push({ x: p.x, y: p.y, ix, iy, lv });
+      }
+
+  function e(k1, k2) {
+    if (idx[k1] !== undefined && idx[k2] !== undefined)
+      edges.push([idx[k1], idx[k2]]);
+  }
+
+  for (let lv = 0; lv < F.stories; lv++)
+    for (let ix = 0; ix <= F.bayX; ix++)
+      for (let iy = 0; iy <= F.bayY; iy++)
+        e(`${ix},${iy},${lv}`, `${ix},${iy},${lv+1}`);
+
+  for (let lv = 1; lv <= F.stories; lv++) {
+    for (let ix = 0; ix < F.bayX; ix++)
+      for (let iy = 0; iy <= F.bayY; iy++)
+        e(`${ix},${iy},${lv}`, `${ix+1},${iy},${lv}`);
+    for (let ix = 0; ix <= F.bayX; ix++)
+      for (let iy = 0; iy < F.bayY; iy++)
+        e(`${ix},${iy},${lv}`, `${ix},${iy+1},${lv}`);
+  }
+
+  return { nodes, edges, idx };
+}
+
+// ─────────────────────────────────────────────────────────────
+// DOM SETUP
+// ─────────────────────────────────────────────────────────────
+document.getElementById('gStruct').innerHTML = buildStructure();
+
+const { nodes, edges, idx } = buildGraph();
+
+const edgeEls = edges.map(([a, b]) => {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  el.setAttribute('x1', f2(nodes[a].x)); el.setAttribute('y1', f2(nodes[a].y));
+  el.setAttribute('x2', f2(nodes[b].x)); el.setAttribute('y2', f2(nodes[b].y));
+  el.className.baseVal = 'g-edge';
+  document.getElementById('gEdges').appendChild(el);
+  return el;
+});
+
+const nodeEls = nodes.map(n => {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  el.setAttribute('cx', f2(n.x)); el.setAttribute('cy', f2(n.y));
+  el.setAttribute('r', '3');
+  el.className.baseVal = 'g-node';
+  document.getElementById('gNodes').appendChild(el);
+  return el;
+});
+
+// Adjacency
+const adj = nodes.map(() => []);
+edges.forEach(([a, b], i) => {
+  adj[a].push({ n: b, e: i });
+  adj[b].push({ n: a, e: i });
+});
+
+// ─────────────────────────────────────────────────────────────
+// COLOUR CONSTANTS
+// ─────────────────────────────────────────────────────────────
+const C = {
+  edgeRest:    '#d4d4d4',
+  edgeDim:     '#ebebeb',
+  edgeActive:  '#8b63ff',
+  edgeLearned: '#cb86ff',
+  nodeRest:    '#a0a0a0',
+  nodeDim:     '#d8d8d8',
+  nodeActive:  '#7b46ff',
+  nodeLearn:   '#b96cff'
+};
+
+const svgStruct = document.getElementById('svgStruct');
+const svgGraph  = document.getElementById('svgGraph');
+const capTitle  = document.getElementById('capTitle');
+const capSub    = document.getElementById('capSub');
+
+function setEdge(i, s, w) {
+  edgeEls[i].setAttribute('stroke', s);
+  edgeEls[i].setAttribute('stroke-width', String(w));
+}
+function setNode(i, fill, r, filt) {
+  nodeEls[i].setAttribute('fill', fill);
+  nodeEls[i].setAttribute('r', String(r));
+  if (filt) nodeEls[i].setAttribute('filter', `url(#${filt})`);
+  else       nodeEls[i].removeAttribute('filter');
+}
+function graphReset() {
+  edges.forEach((_, i) => setEdge(i, C.edgeRest, 0.75));
+  nodes.forEach((_, i) => setNode(i, C.nodeRest, 2.8, null));
+}
+function graphDim() {
+  edges.forEach((_, i) => setEdge(i, C.edgeDim, 0.6));
+  nodes.forEach((_, i) => setNode(i, C.nodeDim, 2.2, null));
+}
+
+// ─────────────────────────────────────────────────────────────
+// CAPTION
+// ─────────────────────────────────────────────────────────────
+function caption(title, sub) {
+  capTitle.style.opacity = '0'; capSub.style.opacity = '0';
+  setTimeout(() => {
+    capTitle.textContent = title; capSub.textContent = sub;
+    capTitle.style.opacity = '1'; capSub.style.opacity = '1';
+  }, 280);
+}
+
+// ─────────────────────────────────────────────────────────────
+// TIMERS
+// ─────────────────────────────────────────────────────────────
+let timers = [];
+function clr()         { timers.forEach(clearTimeout); timers = []; }
+function after(fn, ms) { const t = setTimeout(fn, ms); timers.push(t); }
+
+// ─────────────────────────────────────────────────────────────
+// MESSAGE PASSING
+// ─────────────────────────────────────────────────────────────
+function runMP(done) {
+  const srcKey = `${Math.round(F.bayX/2)},${Math.round(F.bayY/2)},0`;
+  const src    = idx[srcKey];
+
+  graphDim();
+  setNode(src, C.nodeActive, 6, 'glow');
+  caption('message passing', 'layer 0 — source node');
+
+  // BFS
+  const visited = new Set([src]);
+  let frontier  = [src];
+  const waves   = [];
+  while (frontier.length) {
+    const nextN = [], nextE = [];
+    frontier.forEach(n => adj[n].forEach(({ n: nb, e }) => {
+      if (!visited.has(nb)) { visited.add(nb); nextN.push(nb); nextE.push(e); }
+    }));
+    if (nextN.length) waves.push({ nodes: nextN, edges: nextE });
+    frontier = nextN;
+  }
+
+  let t = 0;
+  waves.forEach((wave, hi) => {
+    after(() => {
+      wave.nodes.forEach(n => setNode(n, C.nodeActive, 3.8, 'glowS'));
+      wave.edges.forEach(e => setEdge(e, C.edgeActive, 1.4));
+      caption('message passing', `layer ${hi+1} — ${wave.nodes.length} nodes reached`);
+    }, t);
+    t += 460;
+  });
+
+  after(() => {
+    caption('learned representation', 'every node encodes its structural context');
+    nodes.forEach((_, i) => setNode(i, C.nodeLearn, 2.8, 'glowS'));
+    edges.forEach((_, i) => setEdge(i, C.edgeLearned, 1.0));
+    setNode(src, C.nodeActive, 6, 'glow');
+  }, t + 150);
+
+  after(done, t + 3600);
+}
+
+// ─────────────────────────────────────────────────────────────
+// MAIN LOOP
+// ─────────────────────────────────────────────────────────────
+function cycle() {
+  clr();
+  graphReset();
+
+  svgStruct.style.transition = 'opacity 1.2s ease';
+  svgGraph.style.transition  = 'opacity 1.2s ease';
+  svgStruct.style.opacity    = '1';
+  svgGraph.style.opacity     = '0';
+  caption('Rectangular moment frame', '6 stories · 5 × 4 bays · IPE sections');
+
+  // Structure hold → fade to graph
+  after(() => {
+    caption('joints = nodes', 'members = edges');
+    svgStruct.style.transition = 'opacity 1.6s ease';
+    svgGraph.style.transition  = 'opacity 1.6s ease';
+    svgStruct.style.opacity    = '0.03';
+    svgGraph.style.opacity     = '1';
+  }, 1400);
+
+  // Graph message passing
+  after(() => {
+    graphReset();
+    caption('graph neural network', 'learning from structural topology');
+    runMP(() => {
+      after(() => {
+        svgGraph.style.transition = 'opacity 1.3s ease';
+        svgGraph.style.opacity    = '0';
+        after(cycle, 1500);
+      }, 700);
+    });
+  }, 4800);
+}
+
+cycle();
+</script>
+</body>
+</html>

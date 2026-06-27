@@ -1,0 +1,21 @@
+Replace these in your portfolio repo root:
+- index.html
+- styles.css
+
+Keep these existing names the same:
+- script.js
+- 683f4c313a7291cd436a347d_6578266.webp
+- a58599cb-7950-416e-9402-eff4886da192.png
+- CV_Pelinsu_Sahin.pdf
+- projects/
+
+Add this new folder to the same repo root:
+- thesis/
+
+Inside thesis/ the file names are already final:
+- index.html
+- styles.css
+- app.js
+- ChatGPT Image Jun 26, 2026, 10_03_01 PM.png
+- sunum/
+- figures/

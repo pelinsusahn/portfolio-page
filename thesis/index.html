@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adaptive Topologies</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="scene-stage">
+    <div class="scene-frame">
+      <div class="scene-label">Adaptive Topologies</div>
+
+      <div class="scene-content">
+        <img
+          src="./ChatGPT%20Image%20Jun%2026,%202026,%2010_03_01%20PM.png"
+          alt="Desk scene with two screens, papers, books, and a notebook."
+          class="scene-image"
+        >
+
+        <button
+          class="hotspot is-active"
+          type="button"
+          data-href="./figures/dataset_browse.html"
+          data-x="57.8"
+          data-y="35.7"
+          data-size="20.2"
+          data-zoom="1.62"
+          data-view-ratio="16 / 10"
+          data-view-ratio-number="1.6"
+          aria-label="Main screen"
+        ></button>
+
+        <button
+          class="hotspot"
+          type="button"
+          data-href="./figures/gnn_inference.html"
+          data-x="29.2"
+          data-y="58.9"
+          data-size="17.8"
+          data-zoom="1.78"
+          data-view-ratio="16 / 10"
+          data-view-ratio-number="1.6"
+          aria-label="Laptop screen"
+        ></button>
+
+        <button
+          class="hotspot"
+          type="button"
+          data-href="./figures/normalization_animation.html"
+          data-x="74.4"
+          data-y="76.2"
+          data-size="8.9"
+          data-zoom="2.02"
+          data-view-ratio="2 / 1"
+          data-view-ratio-number="2"
+          aria-label="Paper stack"
+        ></button>
+
+        <button
+          class="hotspot"
+          type="button"
+          data-href="./figures/design_space_matrix.html"
+          data-x="27.3"
+          data-y="89.2"
+          data-size="10.8"
+          data-zoom="1.95"
+          data-view-ratio="16 / 9"
+          data-view-ratio-number="1.7778"
+          aria-label="Open notebook"
+        ></button>
+
+        <button
+          class="hotspot"
+          type="button"
+          data-href="./figures/why_gnn.html"
+          data-x="84.6"
+          data-y="13.8"
+          data-size="7.2"
+          data-zoom="1.58"
+          data-view-ratio="3 / 2"
+          data-view-ratio-number="1.5"
+          aria-label="Closed notebook"
+        ></button>
+      </div>
+
+      <div class="scene-fade" aria-hidden="true"></div>
+
+      <div class="scene-hint" aria-hidden="true">
+        <span class="scene-hint-text">Check more about it</span>
+        <span class="scene-hint-arrow"></span>
+      </div>
+
+      <section class="viewer-overlay" id="viewer-overlay" aria-hidden="true">
+        <div class="viewer-backdrop" data-close="viewer"></div>
+        <div class="viewer-panel" role="dialog" aria-modal="true" aria-label="Project viewer">
+          <button class="viewer-close" id="viewer-close" type="button" aria-label="Close viewer">
+            &times;
+          </button>
+          <iframe
+            class="viewer-frame"
+            id="viewer-frame"
+            title="Interactive project viewer"
+            loading="lazy"
+          ></iframe>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <section class="story-sequence" id="story-sequence" aria-label="Project story gallery">
+    <article class="story-panel story-panel--text">
+      <div class="story-sticky">
+        <div class="story-card story-card--text">
+          <div class="question-copy" id="question-copy">
+            <span class="question-line">Can a graph-based co-pilot give designers fast structural feedback on design,</span>
+            <span class="question-line">so they can explore more alternatives before decisions become fixed?</span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <script src="./app.js"></script>
+  <script>
+    (function () {
+      const storySequence = document.getElementById("story-sequence");
+
+      if (!storySequence) {
+        return;
+      }
+
+      const galleryFolder = "./sunum";
+      const firstImageVersion = "20260627-232812";
+      const imageStem = "1_%C3%87al%C4%B1%C5%9Fma%20Y%C3%BCzeyi%201";
+      const imageSlides = [
+        {
+          type: "image",
+          src: `${galleryFolder}/${imageStem}.jpg?v=${firstImageVersion}`,
+          alt: "Presentation image 1",
+          introText: true
+        },
+        {
+          type: "image",
+          src: `${galleryFolder}/${imageStem}%20kopya.jpg`,
+          alt: "Presentation image 2"
+        }
+      ];
+
+      for (let index = 2; index <= 20; index += 1) {
+        imageSlides.push({
+          type: "image",
+          src: `${galleryFolder}/${imageStem}%20kopya%20${index}.jpg`,
+          alt: `Presentation image ${index + 1}`
+        });
+      }
+
+      const slides = [];
+
+      imageSlides.forEach(function (slide, imageIndex) {
+        slides.push(slide);
+
+        if (imageIndex === 2) {
+          slides.push({
+            type: "html",
+            src: "./figures/dataset_browse.html",
+            title: "Dataset browse",
+            ratio: "16 / 10",
+            ratioNumber: "1.6"
+          });
+          slides.push({
+            type: "html",
+            src: "./figures/design_space_matrix.html",
+            title: "Design space matrix",
+            ratio: "16 / 9",
+            ratioNumber: "1.7778"
+          });
+        }
+
+        if (imageIndex === 7) {
+          slides.push({
+            type: "html",
+            src: "./figures/training_process.html",
+            title: "Training process",
+            ratio: "16 / 9",
+            ratioNumber: "1.7778"
+          });
+        }
+      });
+
+      const fragment = document.createDocumentFragment();
+
+      slides.forEach(function (slide, index) {
+        const panel = document.createElement("article");
+        panel.className = `story-panel story-panel--${slide.type}`;
+
+        const sticky = document.createElement("div");
+        sticky.className = "story-sticky";
+
+        if (slide.type === "image") {
+          const figure = document.createElement("figure");
+          figure.className = "story-card story-media";
+
+          if (slide.introText) {
+            figure.classList.add("story-media--intro");
+          }
+
+          const image = document.createElement("img");
+          image.className = "story-image";
+          image.src = slide.src;
+          image.alt = slide.alt;
+          image.loading = index < 2 ? "eager" : "lazy";
+          image.decoding = "async";
+          figure.appendChild(image);
+
+          if (slide.introText) {
+            const intro = document.createElement("figcaption");
+            intro.className = "story-intro-copy";
+            intro.innerHTML = '<span class="story-intro-strong">Adaptive Topologies</span><span class="story-intro-regular">Learning Structural Logic Through Machine Intelligence</span>';
+            figure.appendChild(intro);
+          }
+
+          sticky.appendChild(figure);
+        } else {
+          const frameShell = document.createElement("div");
+          frameShell.className = "story-card story-card--html";
+          frameShell.style.setProperty("--story-frame-ratio", slide.ratio);
+          frameShell.style.setProperty("--story-frame-ratio-number", slide.ratioNumber);
+
+          const frame = document.createElement("iframe");
+          frame.className = "story-html-frame";
+          frame.src = slide.src;
+          frame.title = slide.title;
+          frame.loading = "lazy";
+
+          frameShell.appendChild(frame);
+          sticky.appendChild(frameShell);
+        }
+
+        panel.appendChild(sticky);
+        fragment.appendChild(panel);
+      });
+
+      storySequence.appendChild(fragment);
+
+      const panels = Array.from(document.querySelectorAll(".story-panel"));
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function updatePanels() {
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 1;
+        const viewportCenter = viewportHeight / 2;
+
+        panels.forEach(function (panel) {
+          const card = panel.querySelector(".story-card");
+
+          if (!card) {
+            return;
+          }
+
+          const rect = panel.getBoundingClientRect();
+          const panelCenter = rect.top + (rect.height / 2);
+          const distance = Math.abs(viewportCenter - panelCenter);
+          const visibility = clamp(1 - (distance / (viewportHeight * 0.82)), 0, 1);
+          const eased = visibility * visibility * (3 - (2 * visibility));
+          const translateY = (1 - eased) * 72;
+          const scale = 0.94 + (eased * 0.06);
+
+          card.style.opacity = eased.toFixed(3);
+          card.style.transform = `translate3d(0, ${translateY.toFixed(2)}px, 0) scale(${scale.toFixed(3)})`;
+
+          const introCopy = panel.querySelector(".story-intro-copy");
+
+          if (introCopy) {
+            const introShift = (1 - eased) * 120;
+            introCopy.style.opacity = eased.toFixed(3);
+            introCopy.style.transform = `translate3d(${(-introShift).toFixed(2)}px, -50%, 0)`;
+          }
+        });
+      }
+
+      updatePanels();
+      window.addEventListener("scroll", updatePanels, { passive: true });
+      window.addEventListener("resize", updatePanels);
+      window.addEventListener("load", updatePanels, { once: true });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1442 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adaptive Topologies</title>
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #111111;
+    --muted: #787878;
+    --quiet: #a5a5a5;
+    --rule: #d9d9d9;
+    --soft: #f5f5f3;
+    --accent: #d9ff43;
+    --font: "Aptos", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --serif: "Iowan Old Style", "Baskerville", "Times New Roman", serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html,
+  body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    padding: clamp(18px, 2.4vw, 42px);
+  }
+
+  .page {
+    width: min(100%, 1780px);
+    min-width: 1020px;
+    min-height: calc(100vh - clamp(36px, 4.8vw, 84px));
+    margin: 0 auto;
+    display: grid;
+    grid-template-rows: auto minmax(640px, 1fr) auto;
+    gap: clamp(14px, 1.5vh, 24px);
+  }
+
+  .metric-label,
+  .footer-note,
+  button {
+    font-size: 8px;
+    font-weight: 500;
+    letter-spacing: 0.035em;
+  }
+
+  .axis-kicker,
+  .footer-note {
+    color: var(--muted);
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .project-name {
+    font-family: var(--serif);
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  .stats-group {
+    display: flex;
+    align-items: flex-end;
+    gap: clamp(28px, 4vw, 72px);
+  }
+
+  .metric {
+    display: grid;
+    gap: 3px;
+    text-align: right;
+  }
+
+  .metric-value {
+    font-family: var(--serif);
+    font-size: clamp(20px, 1.65vw, 29px);
+    font-weight: 400;
+    line-height: 0.9;
+    letter-spacing: -0.025em;
+  }
+
+  .metric-label {
+    color: var(--muted);
+  }
+
+  .matrix {
+    position: relative;
+    display: grid;
+    grid-template-columns: 34px minmax(122px, 0.7fr) repeat(5, minmax(150px, 1fr));
+    grid-template-rows: 25px minmax(104px, 0.68fr) repeat(4, minmax(128px, 1fr));
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    overflow: hidden;
+  }
+
+  .matrix-item {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    border-top: 1px solid var(--rule);
+    border-left: 1px solid var(--rule);
+    background: var(--paper);
+  }
+
+  .forms-axis,
+  .structures-axis {
+    display: flex;
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  .forms-axis {
+    grid-column: 3 / 8;
+    grid-row: 1;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 10px;
+    border-top: 1px solid var(--rule);
+    border-left: 1px solid var(--rule);
+  }
+
+  .structures-axis {
+    grid-column: 1;
+    grid-row: 3 / 7;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 11px;
+    border-top: 1px solid var(--rule);
+    border-left: 1px solid var(--rule);
+  }
+
+  .axis-card {
+    display: grid;
+    align-items: center;
+    transition: background 180ms ease, opacity 180ms ease;
+  }
+
+  .shape-card {
+    grid-template-rows: 1fr auto;
+    justify-items: center;
+    padding: 8px 10px 13px;
+  }
+
+  .system-card {
+    grid-template-columns: 47% 1fr;
+    gap: 2px;
+    padding: 10px 12px;
+  }
+
+  .axis-image {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    filter: contrast(1.06);
+  }
+
+  .shape-card .axis-image {
+    max-width: 112px;
+    max-height: 82px;
+  }
+
+  .system-card .axis-image {
+    max-width: 80px;
+    max-height: 96px;
+    justify-self: center;
+  }
+
+  .axis-label {
+    font-family: var(--serif);
+    font-size: clamp(10px, 0.68vw, 12px);
+    font-weight: 400;
+    letter-spacing: 0.015em;
+    white-space: nowrap;
+  }
+
+  .system-copy {
+    display: grid;
+    gap: 4px;
+    align-content: center;
+  }
+
+  .system-copy .axis-label {
+    white-space: normal;
+    line-height: 1.18;
+  }
+
+  .axis-kicker {
+    color: var(--muted);
+    font-family: var(--font);
+    font-size: 8px;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.25;
+    text-transform: none;
+  }
+
+  .combo {
+    isolation: isolate;
+    cursor: crosshair;
+    overflow: hidden;
+    transition: background 180ms ease, opacity 180ms ease;
+  }
+
+  .combo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 0 solid var(--ink);
+    pointer-events: none;
+    transition: border-width 180ms ease;
+    z-index: 4;
+  }
+
+  .combo:hover::after {
+    border-width: 1px;
+  }
+
+  .combo.is-animating::after {
+    border-width: 1px;
+  }
+
+  .combo-image {
+    position: absolute;
+    inset: 10px 12px 8px;
+    width: calc(100% - 24px);
+    height: calc(100% - 18px);
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    filter: contrast(1.08);
+    transform: scale(0.94);
+    transform-origin: center;
+    transition: transform 250ms cubic-bezier(.2,.75,.2,1), opacity 180ms ease;
+  }
+
+  .combo:hover .combo-image {
+    transform: scale(1.04);
+  }
+
+  .combo.is-animating .combo-image {
+    transform: scale(1.04);
+  }
+
+  .matrix.has-focus .combo:not(.is-focus),
+  .matrix.has-focus .axis-card:not(.is-focus) {
+    opacity: 0.24;
+  }
+
+  .matrix.has-focus .combo.is-focus,
+  .matrix.has-focus .axis-card.is-focus {
+    opacity: 1;
+    background-color: #fbfbf8;
+  }
+
+  .footer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+    align-items: center;
+  }
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 9px;
+  }
+
+  .legend-mark {
+    width: 20px;
+    height: 8px;
+    border-top: 1px solid var(--ink);
+  }
+
+  .footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  button {
+    appearance: none;
+    border: 0;
+    border-bottom: 1px solid var(--ink);
+    padding: 6px 0 5px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  button:hover {
+    color: var(--muted);
+    border-bottom-color: var(--muted);
+  }
+
+  .detail-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    padding: clamp(18px, 3vw, 48px);
+    background: rgba(245, 245, 242, 0.88);
+    backdrop-filter: blur(7px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 220ms ease, visibility 220ms ease;
+  }
+
+  .detail-backdrop.open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .detail-dialog {
+    position: relative;
+    width: min(1120px, calc(100vw - 48px));
+    height: min(760px, calc(100vh - 48px));
+    overflow: hidden;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    transform: translateY(12px) scale(.985);
+    transition: transform 260ms cubic-bezier(.2,.75,.25,1);
+  }
+
+  .detail-backdrop.open .detail-dialog {
+    transform: translateY(0) scale(1);
+  }
+
+  .detail-visual {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    background: #ffffff;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  .detail-structure {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    display: none;
+  }
+
+  .detail-variation-image {
+    position: absolute;
+    inset: 44px 54px 44px 54px;
+    width: calc(100% - 108px);
+    height: calc(100% - 88px);
+    object-fit: contain;
+    object-position: center;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .structure-drawing {
+    transition: opacity 240ms ease;
+  }
+
+  .structure-centerline,
+  .structure-profile,
+  .structure-silhouette,
+  .structure-wall,
+  .structure-joint {
+    fill: none;
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .structure-centerline {
+    stroke: #888888;
+    stroke-width: .7;
+  }
+
+  .structure-silhouette {
+    stroke: #e8e8e8;
+    stroke-width: 2;
+  }
+
+  .structure-profile {
+    stroke: #555555;
+    stroke-width: .35;
+    opacity: .6;
+  }
+
+  .structure-joint {
+    stroke: #444444;
+    stroke-width: .3;
+  }
+
+  .structure-wall {
+    stroke: #888888;
+    stroke-width: .7;
+  }
+
+  .detail-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .overlay-line,
+  .overlay-dimension {
+    fill: none;
+    stroke: #444444;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .overlay-dimension {
+    stroke-width: .6;
+  }
+
+  .overlay-load {
+    fill: none;
+    stroke: #aaaaaa;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .overlay-text {
+    fill: #666666;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 0;
+  }
+
+  .overlay-muted {
+    fill: #555555;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 9px;
+  }
+
+  .overlay-load-text {
+    fill: #666666;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 9px;
+    letter-spacing: 0;
+  }
+
+  .section-inset {
+    position: absolute;
+    left: 20px;
+    bottom: 19px;
+    width: 118px;
+    height: 118px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    background: rgba(255,255,255,.94);
+    transition: transform 700ms ease, opacity 700ms ease;
+  }
+
+  .section-inset svg {
+    width: 82%;
+    height: 82%;
+  }
+
+  .detail-meta {
+    position: absolute;
+    top: 18px;
+    left: 20px;
+    display: grid;
+    gap: 3px;
+  }
+
+  .detail-meta-form {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .detail-meta-system {
+    color: var(--muted);
+    font-size: 10px;
+  }
+
+  .animation-caption {
+    position: absolute;
+    right: 22px;
+    bottom: 21px;
+    width: min(360px, 38%);
+    padding: 16px 18px 15px;
+    border: 1px solid var(--rule);
+    background: rgba(255,255,255,.94);
+  }
+
+  .animation-kicker {
+    color: var(--muted);
+    font-size: 8px;
+    letter-spacing: .08em;
+  }
+
+  .animation-value {
+    min-height: 34px;
+    margin-top: 4px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.05;
+    transition: opacity 260ms ease, transform 260ms ease;
+  }
+
+  .variation-panel {
+    position: absolute;
+    top: 38px;
+    right: 36px;
+    width: 186px;
+    padding: 14px 14px 12px;
+    border: 1px solid var(--rule);
+    background: rgba(255,255,255,.94);
+  }
+
+  .variation-title {
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 8px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .variation-list {
+    display: grid;
+    gap: 6px;
+  }
+
+  .variation-item {
+    padding: 5px 7px;
+    border: 1px solid transparent;
+    color: #666666;
+    font-size: 11px;
+    line-height: 1.2;
+    text-transform: capitalize;
+  }
+
+  .variation-item.active {
+    border-color: #111111;
+    color: #111111;
+  }
+
+  .animation-summary {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 9px;
+    line-height: 1.5;
+  }
+
+  .animation-progress {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 5px;
+    margin-top: 13px;
+  }
+
+  .animation-progress span {
+    height: 2px;
+    background: var(--rule);
+    transition: background 300ms ease;
+  }
+
+  .animation-progress span.active {
+    background: var(--ink);
+  }
+
+  .detail-close {
+    position: absolute;
+    z-index: 3;
+    top: 13px;
+    right: 17px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    font-size: 18px;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .detail-close:hover {
+    border: 0;
+  }
+
+  body.detail-open {
+    overflow: hidden;
+  }
+
+  .matrix-item {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  .matrix-item.revealed {
+    animation: reveal 430ms cubic-bezier(.2,.75,.25,1) forwards;
+  }
+
+  @keyframes reveal {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-height: 790px) {
+    body { padding-top: 16px; padding-bottom: 16px; }
+    .page {
+      grid-template-rows: auto minmax(570px, 1fr) auto;
+      gap: 12px;
+    }
+    .stats { padding-bottom: 9px; }
+    .matrix {
+      grid-template-rows: 23px minmax(92px, .62fr) repeat(4, minmax(112px, 1fr));
+    }
+    .combo-image { inset: 7px 10px 5px; }
+  }
+
+  @media (max-width: 1050px) {
+    body { overflow-x: auto; }
+  }
+
+  @media (max-width: 900px) {
+    .detail-dialog {
+      height: min(720px, calc(100vh - 32px));
+    }
+    .detail-visual {
+      min-height: 0;
+    }
+    .animation-caption {
+      right: 14px;
+      bottom: 14px;
+      width: calc(100% - 168px);
+    }
+    .animation-value {
+      font-size: 20px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .matrix-item,
+    .matrix-item.revealed {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+    .combo-image { transition: none; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="stats">
+    <div class="project-name">Adaptive Topologies</div>
+    <div class="stats-group" aria-label="Dataset summary">
+      <div class="metric">
+        <span class="metric-value">5</span>
+        <span class="metric-label">Forms</span>
+      </div>
+      <div class="metric">
+        <span class="metric-value">4</span>
+        <span class="metric-label">Structural systems</span>
+      </div>
+      <div class="metric">
+        <span class="metric-value">50,000</span>
+        <span class="metric-label">Generated structures</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="matrix" id="matrix" aria-label="Five architectural forms by four structural systems"></section>
+
+  <footer class="footer">
+    <div class="legend">
+      <span class="legend-item"><span class="legend-mark"></span>Form and structural-system combinations</span>
+      <span class="footer-note">50,000 generated structures</span>
+    </div>
+    <div class="footer-actions">
+      <button id="replay" type="button">Animation</button>
+    </div>
+  </footer>
+</main>
+
+<div class="detail-backdrop" id="detailBackdrop" aria-hidden="true">
+  <section class="detail-dialog" role="dialog" aria-modal="true" aria-labelledby="detailForm">
+    <button class="detail-close" id="detailClose" type="button" aria-label="Close">&times;</button>
+    <div class="detail-visual">
+      <div class="detail-meta">
+        <span class="detail-meta-form" id="detailForm">Rectangular</span>
+        <span class="detail-meta-system" id="detailSystem">Moment frame</span>
+      </div>
+      <img class="detail-variation-image" id="detailVariationImage" src="./variation_icons/variation_1.png" alt="Rectangle moment-frame variation drawing">
+      <svg class="detail-structure" id="detailStructure" viewBox="0 0 800 680" role="img" aria-label="Parametric axonometric structural drawing">
+        <g class="structure-drawing" id="structureDrawing"></g>
+      </svg>
+      <svg class="detail-overlay" id="detailOverlay" viewBox="0 0 800 680" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <marker id="arrowEndDim" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#444444"></path>
+          </marker>
+          <marker id="arrowStartDim" markerWidth="7" markerHeight="7" refX="1.5" refY="3.5" orient="auto-start-reverse">
+            <path d="M7,0 L0,3.5 L7,7 Z" fill="#444444"></path>
+          </marker>
+          <marker id="arrowEndLoad" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#aaaaaa"></path>
+          </marker>
+        </defs>
+        <g id="floorGuides"></g>
+        <g id="bayDimensions"></g>
+        <g id="loadArrow"></g>
+      </svg>
+      <div class="variation-panel" aria-label="Variation list">
+        <div class="variation-title">Variations</div>
+        <div class="variation-list" id="variationList">
+          <div class="variation-item" data-variation="stories">Stories</div>
+          <div class="variation-item" data-variation="bays">Bays</div>
+          <div class="variation-item" data-variation="bay spacing">Bay spacing</div>
+          <div class="variation-item" data-variation="story height">Story height</div>
+          <div class="variation-item" data-variation="sections">Sections</div>
+          <div class="variation-item" data-variation="loads">Loads</div>
+        </div>
+      </div>
+      <div class="section-inset" id="sectionInset"></div>
+    </div>
+    <div class="animation-caption" aria-live="polite">
+      <div class="animation-kicker" id="animationKicker">Stories</div>
+      <div class="animation-value" id="animationValue">3 stories</div>
+      <div class="animation-summary" id="animationSummary"></div>
+      <div class="animation-progress" id="animationProgress" aria-hidden="true"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const ASSET_ROOT = "./design_space_icons";
+
+const SHAPES = [
+  { id: "rectangular", label: "Rectangular" },
+  { id: "l_shaped", label: "L-shaped" },
+  { id: "t_shaped", label: "T-shaped" },
+  { id: "setback", label: "Setback" },
+  { id: "podium_tower", label: "Podium tower" }
+];
+
+const SYSTEMS = [
+  { id: "moment_frame", label: "Moment frame", note: "Rigid beam&ndash;column action" },
+  { id: "braced_frame", label: "Braced frame", note: "Diagonal lateral system" },
+  { id: "core_frame", label: "Core frame", note: "Frame + central core" },
+  { id: "shear_wall_frame", label: "Shear wall", note: "Frame + wall panels" }
+];
+
+const matrix = document.getElementById("matrix");
+const replayButton = document.getElementById("replay");
+const detailBackdrop = document.getElementById("detailBackdrop");
+const detailClose = document.getElementById("detailClose");
+const detailVariationImage = document.getElementById("detailVariationImage");
+const variationList = document.getElementById("variationList");
+const structureDrawing = document.getElementById("structureDrawing");
+const detailForm = document.getElementById("detailForm");
+const detailSystem = document.getElementById("detailSystem");
+const floorGuides = document.getElementById("floorGuides");
+const bayDimensions = document.getElementById("bayDimensions");
+const loadArrow = document.getElementById("loadArrow");
+const sectionInset = document.getElementById("sectionInset");
+const animationKicker = document.getElementById("animationKicker");
+const animationValue = document.getElementById("animationValue");
+const animationSummary = document.getElementById("animationSummary");
+const animationProgress = document.getElementById("animationProgress");
+
+let activeShape = SHAPES[0];
+let activeSystem = SYSTEMS[0];
+let animationIndex = 0;
+let animationTimer = null;
+let drawingTimer = null;
+let matrixAnimationTimer = null;
+
+const ACTIVE_VARIATION_SHAPE = "rectangular";
+const ACTIVE_VARIATION_SYSTEM = "moment_frame";
+const VARIATION_IMAGES = [
+  "./variation_icons/variation_1.png",
+  "./variation_icons/variation_2.png",
+  "./variation_icons/variation_3.png",
+  "./variation_icons/variation_4.png",
+  "./variation_icons/variation_5.png",
+  "./variation_icons/variation_6.png",
+  "./variation_icons/variation_7.png",
+  "./variation_icons/variation_7.png"
+];
+
+const VARIATION_GROUPS = [
+  "stories",
+  "stories",
+  "stories",
+  "bays",
+  "bay spacing",
+  "sections",
+  "sections",
+  "loads"
+];
+
+const STORY_HEIGHT = 3.5;
+const AXONOMETRIC_VIEW = {
+  planX: 1.0,
+  planY: 0.58,
+  vertical: 1.14,
+  frameBox: { minX: 102, maxX: 620, minY: 82, maxY: 572 }
+};
+
+const ANIMATION_FRAMES = [
+  { kicker: "Stories", value: "3 stories", stories: 3, bayX: 3, bayY: 3, spacingX: 6, spacingY: 6, family: "IPE", scale: 1.0, load: 1.0 },
+  { kicker: "Stories", value: "9 stories", stories: 9, bayX: 3, bayY: 3, spacingX: 6, spacingY: 6, family: "IPE", scale: 1.0, load: 1.0 },
+  { kicker: "Stories", value: "15 stories", stories: 15, bayX: 3, bayY: 3, spacingX: 6, spacingY: 6, family: "IPE", scale: 1.0, load: 1.0 },
+  { kicker: "Bay grid", value: "2 × 2 bays", stories: 9, bayX: 2, bayY: 2, spacingX: 4, spacingY: 4, family: "IPE", scale: 1.0, load: 1.0 },
+  { kicker: "Bay spacing", value: "5 × 5 bays at 9 m", stories: 9, bayX: 5, bayY: 5, spacingX: 9, spacingY: 9, family: "IPE", scale: 1.0, load: 1.0 },
+  { kicker: "Section", value: "IPE × 0.8", stories: 9, bayX: 3, bayY: 3, spacingX: 6, spacingY: 6, family: "IPE", scale: .8, load: 1.0 },
+  { kicker: "Section", value: "HEB × 1.4", stories: 9, bayX: 3, bayY: 3, spacingX: 6, spacingY: 6, family: "HEB", scale: 1.4, load: 1.0 },
+  { kicker: "Lateral load", value: "2.0 kN/m²", stories: 9, bayX: 3, bayY: 3, spacingX: 6, spacingY: 6, family: "RHS", scale: 1.2, load: 2.0 }
+];
+
+function image(src, alt, className) {
+  const element = document.createElement("img");
+  element.src = `${ASSET_ROOT}/${src}.webp`;
+  element.alt = alt;
+  element.className = className;
+  element.loading = "eager";
+  element.draggable = false;
+  return element;
+}
+
+function addAxisTitles() {
+  const forms = document.createElement("div");
+  forms.className = "matrix-item forms-axis";
+  forms.textContent = "Forms";
+  matrix.appendChild(forms);
+
+  const structures = document.createElement("div");
+  structures.className = "matrix-item structures-axis";
+  structures.textContent = "Structures";
+  matrix.appendChild(structures);
+}
+
+function addShapeHeader(shape, column) {
+  const card = document.createElement("div");
+  card.className = "matrix-item axis-card shape-card";
+  card.dataset.shape = shape.id;
+  card.style.gridColumn = String(column + 3);
+  card.style.gridRow = "2";
+  card.appendChild(image(`shape_${shape.id}`, `${shape.label} building form`, "axis-image"));
+  const label = document.createElement("div");
+  label.className = "axis-label";
+  label.textContent = shape.label;
+  card.appendChild(label);
+  matrix.appendChild(card);
+}
+
+function addSystemHeader(system, row) {
+  const card = document.createElement("div");
+  card.className = "matrix-item axis-card system-card";
+  card.dataset.system = system.id;
+  card.style.gridColumn = "2";
+  card.style.gridRow = String(row + 3);
+  card.appendChild(image(`system_${system.id}`, system.label, "axis-image"));
+  const copy = document.createElement("div");
+  copy.className = "system-copy";
+  copy.innerHTML = `
+    <div class="axis-label">${system.label}</div>
+    <div class="axis-kicker">${system.note}</div>`;
+  card.appendChild(copy);
+  matrix.appendChild(card);
+}
+
+function addCombination(shape, system, column, row) {
+  const key = `${shape.id}__${system.id}`;
+  const isVariationCombo = shape.id === ACTIVE_VARIATION_SHAPE && system.id === ACTIVE_VARIATION_SYSTEM;
+  const card = document.createElement("article");
+  card.className = "matrix-item combo";
+  card.dataset.shape = shape.id;
+  card.dataset.system = system.id;
+  card.style.gridColumn = String(column + 3);
+  card.style.gridRow = String(row + 3);
+  card.setAttribute("aria-label", `${shape.label} with ${system.label}`);
+  card.appendChild(image(`combo_${key}`, `${shape.label} ${system.label}`, "combo-image"));
+
+  card.addEventListener("mouseenter", () => focus(shape.id, system.id));
+  card.addEventListener("mouseleave", clearFocus);
+  if (isVariationCombo) {
+    card.addEventListener("click", () => openDetail(shape, system));
+  } else {
+    card.style.cursor = "default";
+  }
+  matrix.appendChild(card);
+}
+
+function focus(shapeId, systemId) {
+  matrix.classList.add("has-focus");
+  matrix.querySelectorAll(".matrix-item").forEach(item => {
+    const sameShape = item.dataset.shape === shapeId;
+    const sameSystem = item.dataset.system === systemId;
+    item.classList.toggle("is-focus", sameShape || sameSystem);
+  });
+}
+
+function clearFocus() {
+  matrix.classList.remove("has-focus");
+  matrix.querySelectorAll(".is-focus").forEach(item => item.classList.remove("is-focus"));
+}
+
+function clearMatrixAnimationState() {
+  window.clearInterval(matrixAnimationTimer);
+  matrixAnimationTimer = null;
+  matrix.querySelectorAll(".combo.is-animating").forEach(item => item.classList.remove("is-animating"));
+}
+
+function buildMatrix() {
+  addAxisTitles();
+  SHAPES.forEach(addShapeHeader);
+
+  SYSTEMS.forEach((system, row) => {
+    addSystemHeader(system, row);
+    SHAPES.forEach((shape, column) => {
+      addCombination(shape, system, column, row);
+    });
+  });
+}
+
+function reveal() {
+  const items = [...matrix.querySelectorAll(".matrix-item")];
+  items.forEach(item => item.classList.remove("revealed"));
+  void matrix.offsetWidth;
+  items.forEach((item, index) => {
+    window.setTimeout(() => item.classList.add("revealed"), index * 34);
+  });
+}
+
+function startMatrixAnimation() {
+  const combos = [...matrix.querySelectorAll(".combo")];
+  if (!combos.length) return;
+
+  clearMatrixAnimationState();
+  clearFocus();
+
+  let index = 0;
+  const step = () => {
+    const previous = matrix.querySelector(".combo.is-animating");
+    if (previous) previous.classList.remove("is-animating");
+
+    if (index >= combos.length) {
+      clearMatrixAnimationState();
+      clearFocus();
+      return;
+    }
+
+    const combo = combos[index];
+    combo.classList.add("is-animating");
+    focus(combo.dataset.shape, combo.dataset.system);
+    index += 1;
+  };
+
+  step();
+  matrixAnimationTimer = window.setInterval(step, 700);
+}
+
+function openDetail(shape, system, options = {}) {
+  activeShape = shape;
+  activeSystem = system;
+  detailForm.textContent = shape.label;
+  detailSystem.textContent = system.label;
+  detailBackdrop.classList.add("open");
+  detailBackdrop.setAttribute("aria-hidden", "false");
+  document.body.classList.add("detail-open");
+  startParameterAnimation(options);
+}
+
+function closeDetail() {
+  window.clearInterval(animationTimer);
+  animationTimer = null;
+  detailBackdrop.classList.remove("open");
+  detailBackdrop.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("detail-open");
+}
+
+function sectionDiagram(family, scale) {
+  const size = 70 * scale / 1.4;
+  const center = 50;
+  const half = size / 2;
+  if (family === "RHS") {
+    const inner = size * .68;
+    return `<svg viewBox="0 0 100 100" aria-label="${family} section">
+      <rect x="${center-half}" y="${center-half}" width="${size}" height="${size}" fill="none" stroke="#cccccc" stroke-width="1.5"/>
+      <rect x="${center-inner/2}" y="${center-inner/2}" width="${inner}" height="${inner}" fill="none" stroke="#cccccc" stroke-width="1.2"/>
+      <text x="50" y="95" text-anchor="middle" class="overlay-muted">${family} × ${scale.toFixed(1)}</text>
+    </svg>`;
+  }
+  const flange = family === "IPE" ? size * .72 : size;
+  const web = family === "HEB" ? size * .16 : size * .11;
+  const flangeDepth = family === "HEB" ? size * .15 : size * .11;
+  return `<svg viewBox="0 0 100 100" aria-label="${family} section">
+    <path d="M${center-flange/2},${center-half} H${center+flange/2} V${center-half+flangeDepth}
+      H${center+web/2} V${center+half-flangeDepth} H${center+flange/2} V${center+half}
+      H${center-flange/2} V${center+half-flangeDepth} H${center-web/2}
+      V${center-half+flangeDepth} H${center-flange/2} Z"
+      fill="none" stroke="#cccccc" stroke-width="1.5"/>
+    <text x="50" y="95" text-anchor="middle" class="overlay-muted">${family} × ${scale.toFixed(1)}</text>
+  </svg>`;
+}
+
+function cellIsActive(shape, ix, iy, bayX, bayY, level, stories) {
+  if (shape === "rectangular") return true;
+
+  if (shape === "l_shaped") {
+    return !(ix >= Math.ceil(bayX / 2) && iy >= Math.ceil(bayY / 2));
+  }
+
+  if (shape === "t_shaped") {
+    const stemStart = Math.floor((bayX - 1) / 2);
+    const stemEnd = Math.ceil((bayX - 1) / 2);
+    return iy >= Math.max(1, bayY - 2) || (ix >= stemStart && ix <= stemEnd);
+  }
+
+  if (shape === "setback") {
+    const maxInset = Math.max(0, Math.floor((Math.min(bayX, bayY) - 1) / 2));
+    const inset = Math.min(maxInset, Math.floor((level / Math.max(stories, 1)) * 2.4));
+    return ix >= inset && ix < bayX - inset && iy >= inset && iy < bayY - inset;
+  }
+
+  if (shape === "podium_tower") {
+    const podiumStories = Math.max(2, Math.round(stories * .28));
+    if (level <= podiumStories) return true;
+    const towerX = Math.max(1, Math.ceil(bayX * .4));
+    const towerY = Math.max(1, Math.ceil(bayY * .4));
+    const startX = Math.floor((bayX - towerX) / 2);
+    const startY = Math.floor((bayY - towerY) / 2);
+    return ix >= startX && ix < startX + towerX && iy >= startY && iy < startY + towerY;
+  }
+
+  return true;
+}
+
+function cellsAtLevel(frame, level) {
+  const cells = [];
+  for (let ix = 0; ix < frame.bayX; ix += 1) {
+    for (let iy = 0; iy < frame.bayY; iy += 1) {
+      if (cellIsActive(activeShape.id, ix, iy, frame.bayX, frame.bayY, level, frame.stories)) {
+        cells.push([ix, iy]);
+      }
+    }
+  }
+  return cells;
+}
+
+function vertexKey(ix, iy) {
+  return `${ix},${iy}`;
+}
+
+function verticesForCells(cells) {
+  const vertices = new Set();
+  cells.forEach(([ix, iy]) => {
+    vertices.add(vertexKey(ix, iy));
+    vertices.add(vertexKey(ix + 1, iy));
+    vertices.add(vertexKey(ix, iy + 1));
+    vertices.add(vertexKey(ix + 1, iy + 1));
+  });
+  return vertices;
+}
+
+function horizontalEdges(cells) {
+  const edges = new Map();
+  const add = (a, b) => {
+    const first = vertexKey(...a);
+    const second = vertexKey(...b);
+    const key = first < second ? `${first}|${second}` : `${second}|${first}`;
+    edges.set(key, [a, b]);
+  };
+  cells.forEach(([ix, iy]) => {
+    add([ix, iy], [ix + 1, iy]);
+    add([ix + 1, iy], [ix + 1, iy + 1]);
+    add([ix + 1, iy + 1], [ix, iy + 1]);
+    add([ix, iy + 1], [ix, iy]);
+  });
+  return [...edges.values()];
+}
+
+function boundaryEdges(cells) {
+  const edgeCounts = new Map();
+  const add = (a, b) => {
+    const first = vertexKey(...a);
+    const second = vertexKey(...b);
+    const key = first < second ? `${first}|${second}` : `${second}|${first}`;
+    const current = edgeCounts.get(key) || { count: 0, edge: [a, b] };
+    current.count += 1;
+    edgeCounts.set(key, current);
+  };
+  cells.forEach(([ix, iy]) => {
+    add([ix, iy], [ix + 1, iy]);
+    add([ix + 1, iy], [ix + 1, iy + 1]);
+    add([ix + 1, iy + 1], [ix, iy + 1]);
+    add([ix, iy + 1], [ix, iy]);
+  });
+  return [...edgeCounts.values()].filter(item => item.count === 1).map(item => item.edge);
+}
+
+function rawProjectPoint(ix, iy, level, frame) {
+  const x = ix * frame.spacingX;
+  const y = iy * frame.spacingY;
+  const z = level * STORY_HEIGHT;
+  const centeredX = x - frame.bayX * frame.spacingX / 2;
+  const centeredY = y - frame.bayY * frame.spacingY / 2;
+  return {
+    x: (centeredX - centeredY) * AXONOMETRIC_VIEW.planX,
+    y: (centeredX + centeredY) * AXONOMETRIC_VIEW.planY - z * AXONOMETRIC_VIEW.vertical
+  };
+}
+
+function createProjector(frame) {
+  const points = [];
+
+  for (let level = 0; level <= frame.stories; level += 1) {
+    const cells = cellsAtLevel(frame, Math.max(0, level - 1));
+    verticesForCells(cells).forEach(key => {
+      const [ix, iy] = key.split(",").map(Number);
+      points.push(rawProjectPoint(ix, iy, level, frame));
+    });
+  }
+
+  if (!points.length) {
+    points.push(rawProjectPoint(0, 0, 0, frame));
+  }
+
+  const bounds = points.reduce((box, point) => ({
+    minX: Math.min(box.minX, point.x),
+    maxX: Math.max(box.maxX, point.x),
+    minY: Math.min(box.minY, point.y),
+    maxY: Math.max(box.maxY, point.y)
+  }), {
+    minX: Number.POSITIVE_INFINITY,
+    maxX: Number.NEGATIVE_INFINITY,
+    minY: Number.POSITIVE_INFINITY,
+    maxY: Number.NEGATIVE_INFINITY
+  });
+
+  const target = AXONOMETRIC_VIEW.frameBox;
+  const targetWidth = target.maxX - target.minX;
+  const targetHeight = target.maxY - target.minY;
+  const sourceWidth = Math.max(1, bounds.maxX - bounds.minX);
+  const sourceHeight = Math.max(1, bounds.maxY - bounds.minY);
+  const scale = Math.min(targetWidth / sourceWidth, targetHeight / sourceHeight);
+  const offsetX = target.minX + (targetWidth - sourceWidth * scale) / 2 - bounds.minX * scale;
+  const offsetY = target.minY + (targetHeight - sourceHeight * scale) / 2 - bounds.minY * scale;
+
+  return (ix, iy, level) => {
+    const point = rawProjectPoint(ix, iy, level, frame);
+    return {
+      x: point.x * scale + offsetX,
+      y: point.y * scale + offsetY
+    };
+  };
+}
+
+function svgCenterline(a, b, className) {
+  return `<line class="${className}" x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}"/>`;
+}
+
+function svgMember(a, b, className, sectionWidth) {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const length = Math.max(.001, Math.hypot(dx, dy));
+  const nx = -dy / length;
+  const ny = dx / length;
+  const half = sectionWidth / 2;
+  const a1 = { x: a.x + nx * half, y: a.y + ny * half };
+  const a2 = { x: a.x - nx * half, y: a.y - ny * half };
+  const b1 = { x: b.x + nx * half, y: b.y + ny * half };
+  const b2 = { x: b.x - nx * half, y: b.y - ny * half };
+
+  return `
+    <line class="structure-profile ${className}" x1="${a1.x.toFixed(2)}" y1="${a1.y.toFixed(2)}" x2="${b1.x.toFixed(2)}" y2="${b1.y.toFixed(2)}"/>
+    <line class="structure-profile ${className}" x1="${a2.x.toFixed(2)}" y1="${a2.y.toFixed(2)}" x2="${b2.x.toFixed(2)}" y2="${b2.y.toFixed(2)}"/>`;
+}
+
+function svgSilhouette(a, b) {
+  return `<line class="structure-silhouette" x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}"/>`;
+}
+
+function svgJoint(point) {
+  return `
+    <line class="structure-joint" x1="${(point.x - 3).toFixed(2)}" y1="${point.y.toFixed(2)}" x2="${(point.x + 3).toFixed(2)}" y2="${point.y.toFixed(2)}"/>
+    <line class="structure-joint" x1="${point.x.toFixed(2)}" y1="${(point.y - 3).toFixed(2)}" x2="${point.x.toFixed(2)}" y2="${(point.y + 3).toFixed(2)}"/>`;
+}
+
+function svgPanel(points) {
+  const value = points.map(point => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(" ");
+  return `<polygon class="structure-wall" points="${value}"/>`;
+}
+
+function closestCoreCell(cells, bayX, bayY) {
+  const targetX = (bayX - 1) / 2;
+  const targetY = (bayY - 1) / 2;
+  return cells.reduce((best, cell) => {
+    const distance = Math.abs(cell[0] - targetX) + Math.abs(cell[1] - targetY);
+    return !best || distance < best.distance ? { cell, distance } : best;
+  }, null)?.cell;
+}
+
+function drawAxonometric(frame) {
+  const projectPoint = createProjector(frame);
+  const familyWeight = { IPE: .82, HEA: 1.0, HEB: 1.16, RHS: .94 }[frame.family] || 1;
+  const sectionWidth = 1.25 + familyWeight * frame.scale * 1.1;
+  const centerlines = [];
+  const profiles = [];
+  const walls = [];
+  const silhouette = [];
+  const joints = [];
+  const levelCells = [];
+  const levelVertices = [];
+  const boundaryVertexSets = [];
+  const boundaryEdgeMaps = [];
+  const jointKeys = new Set();
+
+  for (let level = 0; level <= frame.stories; level += 1) {
+    const cells = cellsAtLevel(frame, Math.max(0, level - 1));
+    levelCells.push(cells);
+    levelVertices.push(verticesForCells(cells));
+    const edges = boundaryEdges(cells);
+    boundaryEdgeMaps.push(new Set(edges.map(([a, b]) => {
+      const first = vertexKey(...a);
+      const second = vertexKey(...b);
+      return first < second ? `${first}|${second}` : `${second}|${first}`;
+    })));
+    boundaryVertexSets.push(new Set(edges.flat().map(vertex => vertexKey(...vertex))));
+
+    levelVertices[level].forEach(key => {
+      const jointKey = `${level}|${key}`;
+      if (jointKeys.has(jointKey)) return;
+      jointKeys.add(jointKey);
+      const [ix, iy] = key.split(",").map(Number);
+      const point = projectPoint(ix, iy, level);
+      joints.push({ markup: svgJoint(point), depth: point.y });
+    });
+  }
+
+  for (let level = 1; level <= frame.stories; level += 1) {
+    const lower = levelVertices[level - 1];
+    const upper = levelVertices[level];
+    lower.forEach(key => {
+      if (!upper.has(key)) return;
+      const [ix, iy] = key.split(",").map(Number);
+      const a = projectPoint(ix, iy, level - 1, frame);
+      const b = projectPoint(ix, iy, level, frame);
+      const isExterior = boundaryVertexSets[level - 1].has(key) || boundaryVertexSets[level].has(key);
+      profiles.push({ markup: svgMember(a, b, "structure-column", sectionWidth * 1.05), depth: (a.y + b.y) / 2 });
+      if (isExterior) {
+        silhouette.push({ markup: svgSilhouette(a, b), depth: (a.y + b.y) / 2 });
+      } else {
+        centerlines.push({ markup: svgCenterline(a, b, "structure-centerline structure-column"), depth: (a.y + b.y) / 2 });
+      }
+    });
+
+    horizontalEdges(levelCells[level]).forEach(([start, end]) => {
+      const a = projectPoint(start[0], start[1], level, frame);
+      const b = projectPoint(end[0], end[1], level, frame);
+      const first = vertexKey(...start);
+      const second = vertexKey(...end);
+      const edgeKey = first < second ? `${first}|${second}` : `${second}|${first}`;
+      profiles.push({ markup: svgMember(a, b, "structure-beam", sectionWidth), depth: (a.y + b.y) / 2 });
+      if (boundaryEdgeMaps[level].has(edgeKey)) {
+        silhouette.push({ markup: svgSilhouette(a, b), depth: (a.y + b.y) / 2 });
+      } else {
+        centerlines.push({ markup: svgCenterline(a, b, "structure-centerline structure-beam"), depth: (a.y + b.y) / 2 });
+      }
+    });
+  }
+
+  if (activeSystem.id === "braced_frame") {
+    const perimeter = boundaryEdges(levelCells[0]);
+    for (let level = 1; level <= frame.stories; level += 1) {
+      perimeter.forEach(([start, end], edgeIndex) => {
+        if ((edgeIndex + level) % 2 !== 0) return;
+        const a0 = projectPoint(start[0], start[1], level - 1, frame);
+        const a1 = projectPoint(start[0], start[1], level, frame);
+        const b0 = projectPoint(end[0], end[1], level - 1, frame);
+        const b1 = projectPoint(end[0], end[1], level, frame);
+        profiles.push({ markup: svgMember(a0, b1, "structure-brace", sectionWidth * .72), depth: (a0.y + b1.y) / 2 });
+        profiles.push({ markup: svgMember(b0, a1, "structure-brace", sectionWidth * .72), depth: (b0.y + a1.y) / 2 });
+        centerlines.push({ markup: svgCenterline(a0, b1, "structure-centerline structure-brace"), depth: (a0.y + b1.y) / 2 });
+        centerlines.push({ markup: svgCenterline(b0, a1, "structure-centerline structure-brace"), depth: (b0.y + a1.y) / 2 });
+      });
+    }
+  }
+
+  if (activeSystem.id === "core_frame") {
+    const core = closestCoreCell(levelCells[0], frame.bayX, frame.bayY);
+    if (core) {
+      const [ix, iy] = core;
+      const corners = [[ix, iy], [ix + 1, iy], [ix + 1, iy + 1], [ix, iy + 1]];
+      for (let edge = 0; edge < 4; edge += 1) {
+        const start = corners[edge];
+        const end = corners[(edge + 1) % 4];
+        const points = [
+          projectPoint(start[0], start[1], 0, frame),
+          projectPoint(end[0], end[1], 0, frame),
+          projectPoint(end[0], end[1], frame.stories, frame),
+          projectPoint(start[0], start[1], frame.stories, frame)
+        ];
+        walls.push({ markup: svgPanel(points), depth: points.reduce((sum, point) => sum + point.y, 0) / 4 });
+      }
+    }
+  }
+
+  if (activeSystem.id === "shear_wall_frame") {
+    boundaryEdges(levelCells[0]).forEach(([start, end], edgeIndex) => {
+      if (edgeIndex % 2 !== 0) return;
+      const points = [
+        projectPoint(start[0], start[1], 0, frame),
+        projectPoint(end[0], end[1], 0, frame),
+        projectPoint(end[0], end[1], frame.stories, frame),
+        projectPoint(start[0], start[1], frame.stories, frame)
+      ];
+      walls.push({ markup: svgPanel(points), depth: points.reduce((sum, point) => sum + point.y, 0) / 4 });
+    });
+  }
+
+  const markup = walls
+    .sort((a, b) => a.depth - b.depth)
+    .map(item => item.markup)
+    .join("") + centerlines
+      .sort((a, b) => a.depth - b.depth)
+      .map(item => item.markup)
+      .join("") + profiles
+      .sort((a, b) => a.depth - b.depth)
+      .map(item => item.markup)
+      .join("") + joints
+      .sort((a, b) => a.depth - b.depth)
+      .map(item => item.markup)
+      .join("") + silhouette
+      .sort((a, b) => a.depth - b.depth)
+      .map(item => item.markup)
+      .join("");
+
+  window.clearTimeout(drawingTimer);
+  structureDrawing.style.opacity = "0";
+  drawingTimer = window.setTimeout(() => {
+    structureDrawing.innerHTML = markup;
+    structureDrawing.style.opacity = "1";
+  }, 170);
+}
+
+function renderAnimationFrame(frame, index) {
+  const { stories, bayX, bayY, spacingX, spacingY, family, scale, load } = frame;
+  const activeVariation = VARIATION_GROUPS[index] || "";
+
+  animationKicker.textContent = frame.kicker;
+  animationValue.textContent = frame.value;
+  detailVariationImage.src = VARIATION_IMAGES[index];
+  detailVariationImage.alt = `${frame.value} variation drawing`;
+  animationSummary.innerHTML = `
+    ${activeShape.label} / ${activeSystem.label}<br>
+    ${stories} stories &middot; ${bayX} × ${bayY} bays &middot; ${spacingX.toFixed(1)} × ${spacingY.toFixed(1)} m<br>
+    ${family} section at ${scale.toFixed(1)} scale &middot; ${load.toFixed(1)} kN/m&#178;`;
+
+  [...animationProgress.children].forEach((item, itemIndex) => {
+    item.classList.toggle("active", itemIndex === index);
+  });
+  [...variationList.children].forEach(item => {
+    item.classList.toggle("active", item.dataset.variation === activeVariation);
+  });
+
+  structureDrawing.innerHTML = "";
+  floorGuides.innerHTML = "";
+  bayDimensions.innerHTML = "";
+  loadArrow.innerHTML = `
+    <line class="overlay-load" x1="96" y1="242" x2="178" y2="242" marker-end="url(#arrowEndLoad)"></line>
+    <text class="overlay-load-text" x="96" y="226" text-anchor="start">${load.toFixed(1)} kN/m&#178; lateral load</text>`;
+  sectionInset.innerHTML = sectionDiagram(family, scale);
+}
+
+
+function startParameterAnimation(options = {}) {
+  const { loop = true, intervalMs = 900 } = options;
+  window.clearInterval(animationTimer);
+  animationProgress.innerHTML = ANIMATION_FRAMES.map(() => "<span></span>").join("");
+  animationIndex = 0;
+  renderAnimationFrame(ANIMATION_FRAMES[animationIndex], animationIndex);
+  animationTimer = window.setInterval(() => {
+    if (!loop && animationIndex >= ANIMATION_FRAMES.length - 1) {
+      window.clearInterval(animationTimer);
+      animationTimer = null;
+      return;
+    }
+    animationIndex = loop
+      ? (animationIndex + 1) % ANIMATION_FRAMES.length
+      : animationIndex + 1;
+    renderAnimationFrame(ANIMATION_FRAMES[animationIndex], animationIndex);
+  }, intervalMs);
+}
+
+replayButton.addEventListener("click", startMatrixAnimation);
+detailClose.addEventListener("click", closeDetail);
+detailBackdrop.addEventListener("click", event => {
+  if (event.target === detailBackdrop) closeDetail();
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeDetail();
+});
+buildMatrix();
+reveal();
+</script>
+</body>
+</html>
+

@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Adaptive Topologies - Training Process</title>
+<style>
+  :root {
+    --ink: #171717;
+    --muted: #83827c;
+    --bg: #ffffff;
+    --panel-bg: #ffffff;
+    --rule: rgba(0,0,0,0.10);
+    --soft: rgba(0,0,0,0.035);
+    --font-ui: "Suisse Intl", "Neue Haas Grotesk", "ABC Diatype", "Inter", Arial, sans-serif;
+    --font-mono: "IBM Plex Mono", "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+  .app {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: #ffffff;
+  }
+  .header {
+    position: absolute;
+    top: 26px;
+    left: 30px;
+    z-index: 4;
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    pointer-events: none;
+  }
+  .header strong { color: var(--ink); font-weight: 520; }
+  .replay {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 5;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 12px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.82);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+  }
+  .grid {
+    position: absolute;
+    inset: 78px 72px 48px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 42px;
+  }
+  .card {
+    position: relative;
+    overflow: visible;
+    display: grid;
+    grid-template-rows: 54px minmax(260px, 1fr) 132px 58px 24px;
+    row-gap: 14px;
+    min-height: 0;
+    padding: 16px 24px 20px;
+    background: var(--panel-bg);
+    border: 1px solid rgba(0,0,0,0.075);
+    border-radius: 22px;
+    box-shadow: none;
+  }
+  .card-label {
+    position: relative;
+    left: auto;
+    top: auto;
+    z-index: 2;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .card-label strong {
+    display: block;
+    margin-top: 6px;
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: 0.07em;
+  }
+  .graph {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+  }
+  .curve {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    height: 132px;
+  }
+  .value-row {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .value-row strong { display: block; color: var(--ink); font-weight: 430; margin-top: 4px; font-size: 11px; }
+  .accuracy {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  svg { display: block; width: 100%; height: 100%; }
+  .structure-underlay-member { stroke: rgba(0,0,0,0.15); stroke-linecap: round; fill: none; }
+  .structure-underlay-member.column { stroke-width: 5.8; }
+  .structure-underlay-member.beam { stroke-width: 4.1; }
+  .structure-underlay-member.brace { stroke-width: 2.9; }
+  .structure-underlay-wall { fill: rgba(0,0,0,0.06); stroke: rgba(0,0,0,0.14); stroke-width: 2.4; }
+  .building-member { stroke: rgba(0,0,0,0.42); stroke-width: 0.9; fill: none; stroke-linecap: round; }
+  .building-member.column { stroke: rgba(0,0,0,0.54); stroke-width: 1.05; }
+  .building-member.beam { stroke: rgba(0,0,0,0.38); stroke-width: 0.85; }
+  .building-member.brace { stroke: rgba(0,0,0,0.34); stroke-width: 0.72; }
+  .building-wall { fill: rgba(0,0,0,0.065); stroke: rgba(0,0,0,0.24); stroke-width: 0.72; }
+  .building-joint { fill: #d2d2ce; }
+  .building-joint.support { fill: #5c5b56; }
+  .load-arrow { stroke: rgba(0,0,0,0.44); stroke-width: 1.05; fill: none; stroke-linecap: round; }
+  .load-arrow.gravity { stroke: rgba(0,0,0,0.26); stroke-width: 0.82; }
+  .axis-line { stroke: rgba(0,0,0,0.16); stroke-width: 1; }
+  .grid-line { stroke: rgba(0,0,0,0.055); stroke-width: 1; }
+  .sim-line { stroke: rgba(0,0,0,0.34); stroke-width: 1; stroke-dasharray: 4 5; }
+  .prediction-line { fill: none; stroke: rgba(0,0,0,0.88); stroke-width: 2.35; stroke-linecap: round; stroke-linejoin: round; opacity: 1; }
+  .prediction-ghost { fill: none; stroke: rgba(0,0,0,0.18); stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; opacity: 1; }
+  .small-label { fill: var(--muted); font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .curve-label { fill: var(--ink); font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.07em; text-transform: uppercase; paint-order: stroke; stroke: rgba(255,255,255,0.92); stroke-width: 3px; }
+  .target-label { fill: var(--muted); font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.07em; text-transform: uppercase; paint-order: stroke; stroke: rgba(255,255,255,0.92); stroke-width: 3px; }
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="header"><strong>Adaptive topologies</strong> / structural graph training</div>
+  <button class="replay" id="replay">Replay</button>
+
+  <section class="grid">
+    <article class="card">
+      <div class="card-label">Dataset #211<strong>rectangular / braced frame</strong></div>
+      <svg class="graph" id="graph-a"></svg>
+      <svg class="curve" id="curve-a"></svg>
+      <div class="value-row"><span>OpenSees simulation<strong id="sim-a"></strong></span><span>GNN prediction<strong id="pred-a"></strong></span></div>
+      <div class="accuracy" id="acc-a"></div>
+    </article>
+    <article class="card">
+      <div class="card-label">Dataset #059<strong>podium tower / core frame</strong></div>
+      <svg class="graph" id="graph-b"></svg>
+      <svg class="curve" id="curve-b"></svg>
+      <div class="value-row"><span>OpenSees simulation<strong id="sim-b"></strong></span><span>GNN prediction<strong id="pred-b"></strong></span></div>
+      <div class="accuracy" id="acc-b"></div>
+    </article>
+    <article class="card">
+      <div class="card-label">Dataset #028<strong>L-shaped / shear walls</strong></div>
+      <svg class="graph" id="graph-c"></svg>
+      <svg class="curve" id="curve-c"></svg>
+      <div class="value-row"><span>OpenSees simulation<strong id="sim-c"></strong></span><span>GNN prediction<strong id="pred-c"></strong></span></div>
+      <div class="accuracy" id="acc-c"></div>
+    </article>
+  </section>
+</main>
+
+<script>
+const SAMPLES = [
+  {
+    key: "a",
+    shape: "rectangular",
+    system: "braced_frame",
+    params: { n_stories: 9, bay_x: 2, bay_y: 2, bay_spacing_x: 4.9836, bay_spacing_y: 5.5219, story_height: 3.1151 },
+    simulated: 0.005919,
+    predicted: 0.00625,
+    loadMode: "lateral",
+    variants: [
+      { start: 0.0110, end: 0.00625, final: true }
+    ]
+  },
+  {
+    key: "b",
+    shape: "podium_tower",
+    system: "core_frame",
+    params: { n_stories: 9, bay_x: 4, bay_y: 5, bay_spacing_x: 8.9172, bay_spacing_y: 6.3478, story_height: 4.2546 },
+    simulated: 0.003670,
+    predicted: 0.00392,
+    loadMode: "mixed",
+    variants: [
+      { start: 0.0084, end: 0.00392, final: true }
+    ]
+  },
+  {
+    key: "c",
+    shape: "l_shaped",
+    system: "shear_wall_frame",
+    params: { n_stories: 9, bay_x: 4, bay_y: 4, bay_spacing_x: 8.1313, bay_spacing_y: 8.1753, story_height: 4.0380 },
+    simulated: 0.000785,
+    predicted: 0.00084,
+    loadMode: "top-lateral",
+    variants: [
+      { start: 0.0027, end: 0.00084, final: true }
+    ]
+  }
+];
+
+const DURATION = 15000;
+let startTime = performance.now();
+document.getElementById("replay").addEventListener("click", () => { startTime = performance.now(); });
+let graphsRendered = false;
+
+function renderStaticGraphs() {
+  SAMPLES.forEach(sample => renderGraph(document.getElementById(`graph-${sample.key}`), sample));
+  graphsRendered = true;
+}
+
+function tick(now) {
+  const t = ((now - startTime) % DURATION) / DURATION;
+  if (!graphsRendered) renderStaticGraphs();
+  SAMPLES.forEach(sample => {
+    renderCurve(document.getElementById(`curve-${sample.key}`), sample, t);
+    const pred = currentPrediction(sample, t);
+    const off = Math.abs(pred - sample.simulated) / Math.max(sample.simulated, 1e-9) * 100;
+    document.getElementById(`sim-${sample.key}`).textContent = `${sample.simulated.toFixed(4)} mm`;
+    document.getElementById(`pred-${sample.key}`).textContent = `${pred.toFixed(4)} mm`;
+    document.getElementById(`acc-${sample.key}`).textContent = `prediction error: ${off.toFixed(1)}%`;
+  });
+  requestAnimationFrame(tick);
+}
+window.addEventListener("resize", () => { graphsRendered = false; });
+
+function renderGraph(svg, sample) {
+  const W = svg.clientWidth || 500, H = svg.clientHeight || 360;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = "";
+  const structure = buildStructure(sample);
+  const projected = projectStructure(structure, W, H);
+
+  for (const wall of projected.walls) svg.appendChild(pathFromWall(wall, "structure-underlay-wall"));
+  for (const e of structure.edges) {
+    const a = projected.nodes[e.a], b = projected.nodes[e.b];
+    svg.appendChild(svgLine(a.x, a.y, b.x, b.y, `structure-underlay-member ${e.kind}`));
+  }
+  for (const wall of projected.walls) svg.appendChild(pathFromWall(wall, "building-wall"));
+  for (const e of structure.edges) {
+    const a = projected.nodes[e.a], b = projected.nodes[e.b];
+    svg.appendChild(svgLine(a.x, a.y, b.x, b.y, `building-member ${e.kind}`));
+  }
+  for (const n of projected.nodes) {
+    svg.appendChild(svgCircle(n.x, n.y, n.support ? 2.0 : 1.45, `building-joint${n.support ? " support" : ""}`));
+  }
+  drawLoads(svg, projected.nodes, sample.loadMode);
+}
+
+function renderCurve(svg, sample, t) {
+  const W = svg.clientWidth || 500, H = svg.clientHeight || 150;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = "";
+  const m = { l: 34, r: 104, t: 13, b: 24 };
+  svg.appendChild(svgLine(m.l, H - m.b, W - m.r, H - m.b, "axis-line"));
+  svg.appendChild(svgLine(m.l, m.t, m.l, H - m.b, "axis-line"));
+  for (let i = 1; i < 4; i++) svg.appendChild(svgLine(m.l, m.t + i / 4 * (H - m.t - m.b), W - m.r, m.t + i / 4 * (H - m.t - m.b), "grid-line"));
+
+  const finalVariant = sample.variants.find(v => v.final);
+  const history = trainingHistory(finalVariant, sample.key, 2);
+  const maxValue = Math.max(...history, sample.simulated) * 1.10;
+  const ySim = map(sample.simulated, 0, maxValue, H - m.b, m.t);
+  svg.appendChild(svgLine(m.l, ySim, W - m.r, ySim, "sim-line"));
+
+  const p = trainingProgress(t);
+  const pts = history.map((value, i) => [
+    m.l + i / (history.length - 1) * (W - m.l - m.r),
+    map(value, 0, maxValue, H - m.b, m.t)
+  ]);
+  svg.appendChild(svgPath(pts, "prediction-ghost"));
+  const visibleCount = Math.max(2, Math.floor(pts.length * p));
+  const visible = pts.slice(0, visibleCount);
+  svg.appendChild(svgPath(visible, "prediction-line"));
+
+  const labelAnchor = visible[visible.length - 1];
+  svg.appendChild(svgText(labelAnchor[0] + 7, labelAnchor[1] - 5, "GNN prediction during training", "curve-label"));
+  svg.appendChild(svgText(W - m.r + 7, ySim + 3, "OpenSees simulation target", "target-label"));
+  svg.appendChild(svgText(m.l, H - 6, "training start", "small-label"));
+  svg.appendChild(svgText(W - 118, H - 6, "trained model", "small-label"));
+}
+
+function buildStructure(sample) {
+  const p = sample.params, nodes = [], nodeMap = new Map(), edges = [], walls = [];
+  function includeCell(i, j, floor) {
+    if (sample.shape === "l_shaped") return !(i >= Math.ceil(p.bay_x / 2) && j >= Math.ceil(p.bay_y / 2));
+    if (sample.shape === "podium_tower" && floor > Math.max(1, Math.floor(p.n_stories * 0.3))) return i >= 1 && j >= 1 && i < p.bay_x - 1 && j < p.bay_y - 1;
+    return true;
+  }
+  function cells(floor) {
+    const out = [];
+    for (let i = 0; i < p.bay_x; i++) for (let j = 0; j < p.bay_y; j++) if (includeCell(i, j, floor)) out.push([i, j]);
+    return out.length ? out : [[0, 0]];
+  }
+  function corners(cellList) {
+    const s = new Set();
+    for (const [i, j] of cellList) { s.add(`${i},${j}`); s.add(`${i+1},${j}`); s.add(`${i},${j+1}`); s.add(`${i+1},${j+1}`); }
+    return s;
+  }
+  function node(i, j, f) {
+    const key = `${i},${j},${f}`;
+    if (!nodeMap.has(key)) {
+      nodeMap.set(key, nodes.length);
+      nodes.push({ id: nodes.length, x: i * p.bay_spacing_x, y: j * p.bay_spacing_y, z: f * p.story_height, support: f === 0, load: f === p.n_stories });
+    }
+    return nodeMap.get(key);
+  }
+  const levels = [];
+  for (let f = 0; f <= p.n_stories; f++) levels.push(cells(f));
+  const levelCorners = levels.map(corners);
+  for (let f = 0; f < p.n_stories; f++) for (const key of levelCorners[f]) if (levelCorners[f + 1].has(key)) {
+    const [i, j] = key.split(",").map(Number); edges.push({ a: node(i, j, f), b: node(i, j, f + 1), kind: "column" });
+  }
+  for (let f = 1; f <= p.n_stories; f++) for (const edge of cellEdges(levels[f])) {
+    const [[i0, j0], [i1, j1]] = edge; edges.push({ a: node(i0, j0, f), b: node(i1, j1, f), kind: "beam" });
+  }
+  if (sample.system === "braced_frame") {
+    for (let f = 0; f < p.n_stories; f++) for (const [i, j] of levels[f + 1]) {
+      if ((i + j + f) % 2 === 0) edges.push({ a: node(i, j, f), b: node(i + 1, j + 1, f + 1), kind: "brace" });
+      else edges.push({ a: node(i + 1, j, f), b: node(i, j + 1, f + 1), kind: "brace" });
+    }
+  }
+  if (sample.system === "core_frame") addCoreWalls(walls, p);
+  if (sample.system === "shear_wall_frame") addPerimeterWalls(walls, p, sample, cells(0));
+  return { nodes, edges, walls };
+}
+
+function addCoreWalls(walls, p) {
+  const i = Math.max(0, Math.floor((p.bay_x - 1) / 2)), j = Math.max(0, Math.floor((p.bay_y - 1) / 2));
+  const x0 = i * p.bay_spacing_x, x1 = (i + 1) * p.bay_spacing_x, y0 = j * p.bay_spacing_y, y1 = (j + 1) * p.bay_spacing_y, h = p.n_stories * p.story_height;
+  walls.push([[x0,y0,0],[x1,y0,0],[x1,y0,h],[x0,y0,h]], [[x1,y0,0],[x1,y1,0],[x1,y1,h],[x1,y0,h]], [[x1,y1,0],[x0,y1,0],[x0,y1,h],[x1,y1,h]], [[x0,y1,0],[x0,y0,0],[x0,y0,h],[x0,y1,h]]);
+}
+function addPerimeterWalls(walls, p, sample, baseCells) {
+  const h = p.n_stories * p.story_height;
+  for (const [[i0, j0], [i1, j1]] of perimeterEdges(baseCells)) walls.push([[i0*p.bay_spacing_x,j0*p.bay_spacing_y,0],[i1*p.bay_spacing_x,j1*p.bay_spacing_y,0],[i1*p.bay_spacing_x,j1*p.bay_spacing_y,h],[i0*p.bay_spacing_x,j0*p.bay_spacing_y,h]]);
+}
+
+function projectStructure(structure, W, H) {
+  const pts = structure.nodes.map(n => [n.x, n.y, n.z]).concat(structure.walls.flat());
+  const proj = p => [p[0] + 0.52 * p[1], -p[2] + 0.30 * p[1]];
+  const raw = pts.map(proj), xs = raw.map(p => p[0]), ys = raw.map(p => p[1]);
+  const scale = 0.92 * Math.min((W - 84) / (Math.max(...xs) - Math.min(...xs) || 1), (H - 72) / (Math.max(...ys) - Math.min(...ys) || 1));
+  const ox = W / 2 - ((Math.min(...xs) + Math.max(...xs)) / 2) * scale;
+  const oy = H / 2 + 16 - ((Math.min(...ys) + Math.max(...ys)) / 2) * scale;
+  const toScreen = p => { const q = proj(p); return { x: q[0] * scale + ox, y: q[1] * scale + oy, depth: p[1] }; };
+  return { nodes: structure.nodes.map(n => ({ ...n, ...toScreen([n.x, n.y, n.z]) })), walls: structure.walls.map(w => w.map(toScreen)) };
+}
+
+function drawLoads(svg, nodes, mode) {
+  const top = nodes.filter(n => n.load).sort((a, b) => a.x - b.x || a.y - b.y);
+  const selected = mode === "mixed" ? top.slice(0, 8) : top.filter((_, i) => i % 2 === 0).slice(0, 7);
+  selected.forEach((n, i) => {
+    if (mode === "mixed" && i % 3 === 0) arrow(svg, n.x, n.y - 22, n.x, n.y - 6, "gravity");
+    else if (mode === "mixed") arrow(svg, n.x - 25, n.y - 2, n.x - 8, n.y - 2);
+    else if (mode === "top-lateral") arrow(svg, n.x - 30, n.y + (i % 2 ? 3 : -3), n.x - 9, n.y + (i % 2 ? 3 : -3));
+    else arrow(svg, n.x - 25, n.y, n.x - 7, n.y);
+  });
+}
+function arrow(svg, x1, y1, x2, y2, extraClass = "") {
+  const cls = `load-arrow${extraClass ? " " + extraClass : ""}`;
+  svg.appendChild(svgLine(x1, y1, x2, y2, cls));
+  const dx = x2 - x1, dy = y2 - y1, len = Math.max(1, Math.hypot(dx, dy)), ux = dx / len, uy = dy / len, px = -uy, py = ux;
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", `M ${(x2 - ux*5 + px*3).toFixed(2)} ${(y2 - uy*5 + py*3).toFixed(2)} L ${x2.toFixed(2)} ${y2.toFixed(2)} L ${(x2 - ux*5 - px*3).toFixed(2)} ${(y2 - uy*5 - py*3).toFixed(2)}`);
+  path.setAttribute("class", cls);
+  svg.appendChild(path);
+}
+
+function currentPrediction(sample, t) {
+  const p = trainingProgress(t);
+  const finalVariant = sample.variants.find(v => v.final);
+  const history = trainingHistory(finalVariant, sample.key, 2);
+  return interpolateHistory(history, p);
+}
+function trainingProgress(t) { return clamp((t - 0.08) / 0.78, 0, 1); }
+function trainingHistory(variant, key, variantIndex) {
+  const steps = 30;
+  const seedBase = key.charCodeAt(0) * 37 + variantIndex * 101;
+  const out = [];
+  for (let i = 0; i < steps; i++) {
+    const u = i / (steps - 1);
+    const decay = 1 - Math.exp(-u * (variant.final ? 4.6 : 3.1));
+    const base = lerp(variant.start, variant.end, decay);
+    const noiseScale = lerp(0.18, 0.035, u) * Math.max(variant.start - variant.end, variant.end * 0.25);
+    const jag = Math.sin((i + seedBase) * 1.73) * noiseScale + Math.sin((i + seedBase) * 0.61) * noiseScale * 0.55;
+    out.push(Math.max(variant.end * 0.86, base + jag));
+  }
+  out[0] = variant.start;
+  out[out.length - 1] = variant.end;
+  return out;
+}
+function interpolateHistory(history, t) {
+  const x = clamp(t, 0, 1) * (history.length - 1);
+  const i = Math.floor(x);
+  const j = Math.min(history.length - 1, i + 1);
+  return lerp(history[i], history[j], x - i);
+}
+function cellEdges(cells) {
+  const seen = new Set(), edges = [];
+  for (const [i, j] of cells) {
+    const all = [[[i,j],[i+1,j]], [[i+1,j],[i+1,j+1]], [[i,j+1],[i+1,j+1]], [[i,j],[i,j+1]]];
+    for (const e of all) {
+      const key = JSON.stringify(e[0]) < JSON.stringify(e[1]) ? `${e[0]}-${e[1]}` : `${e[1]}-${e[0]}`;
+      if (!seen.has(key)) { seen.add(key); edges.push(e); }
+    }
+  }
+  return edges;
+}
+function perimeterEdges(cells) {
+  const set = new Set(cells.map(([i,j]) => `${i},${j}`)), edges = [];
+  for (const [i,j] of cells) {
+    if (!set.has(`${i},${j-1}`)) edges.push([[i,j],[i+1,j]]);
+    if (!set.has(`${i},${j+1}`)) edges.push([[i,j+1],[i+1,j+1]]);
+    if (!set.has(`${i-1},${j}`)) edges.push([[i,j],[i,j+1]]);
+    if (!set.has(`${i+1},${j}`)) edges.push([[i+1,j],[i+1,j+1]]);
+  }
+  return edges;
+}
+function svgLine(x1, y1, x2, y2, cls) { const el = document.createElementNS("http://www.w3.org/2000/svg", "line"); el.setAttribute("x1", x1.toFixed(2)); el.setAttribute("y1", y1.toFixed(2)); el.setAttribute("x2", x2.toFixed(2)); el.setAttribute("y2", y2.toFixed(2)); el.setAttribute("class", cls); return el; }
+function svgCircle(cx, cy, r, cls) { const el = document.createElementNS("http://www.w3.org/2000/svg", "circle"); el.setAttribute("cx", cx.toFixed(2)); el.setAttribute("cy", cy.toFixed(2)); el.setAttribute("r", r.toFixed(2)); el.setAttribute("class", cls); return el; }
+function svgPath(points, cls) { const el = document.createElementNS("http://www.w3.org/2000/svg", "path"); el.setAttribute("d", points.map((p, i) => `${i ? "L" : "M"} ${p[0].toFixed(2)} ${p[1].toFixed(2)}`).join(" ")); el.setAttribute("class", cls); return el; }
+function svgText(x, y, text, cls) { const el = document.createElementNS("http://www.w3.org/2000/svg", "text"); el.setAttribute("x", x); el.setAttribute("y", y); el.setAttribute("class", cls); el.textContent = text; return el; }
+function pathFromWall(w, cls) { const el = document.createElementNS("http://www.w3.org/2000/svg", "path"); el.setAttribute("d", `M ${w[0].x.toFixed(2)} ${w[0].y.toFixed(2)} L ${w[1].x.toFixed(2)} ${w[1].y.toFixed(2)} L ${w[2].x.toFixed(2)} ${w[2].y.toFixed(2)} L ${w[3].x.toFixed(2)} ${w[3].y.toFixed(2)} Z`); el.setAttribute("class", cls); return el; }
+function map(v, a, b, c, d) { return c + (v - a) / (b - a) * (d - c); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
