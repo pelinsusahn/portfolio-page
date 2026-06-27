@@ -168,6 +168,47 @@
   .small-label { fill: var(--muted); font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.08em; text-transform: uppercase; }
   .curve-label { fill: var(--ink); font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.07em; text-transform: uppercase; paint-order: stroke; stroke: rgba(255,255,255,0.92); stroke-width: 3px; }
   .target-label { fill: var(--muted); font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.07em; text-transform: uppercase; paint-order: stroke; stroke: rgba(255,255,255,0.92); stroke-width: 3px; }
+  @media (max-width: 760px) {
+    html, body { height: auto; min-height: 100%; overflow: auto; }
+    .app { width: 100%; height: auto; min-height: 100svh; padding: 68px 14px 18px; }
+    .header {
+      top: 14px;
+      left: 14px;
+      font-size: 9px;
+      letter-spacing: 0.06em;
+    }
+    .replay {
+      top: 12px;
+      right: 12px;
+      height: 30px;
+      padding: 0 10px;
+      font-size: 9px;
+    }
+    .grid {
+      position: relative;
+      inset: auto;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    .card {
+      grid-template-rows: 42px minmax(220px, 1fr) 110px auto auto;
+      row-gap: 10px;
+      padding: 12px 14px 14px;
+      border-radius: 18px;
+    }
+    .card-label,
+    .value-row,
+    .accuracy {
+      font-size: 8px;
+      letter-spacing: 0.06em;
+    }
+    .value-row strong {
+      font-size: 10px;
+    }
+    .curve {
+      height: 110px;
+    }
+  }
 </style>
 </head>
 <body>

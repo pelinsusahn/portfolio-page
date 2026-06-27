@@ -276,6 +276,76 @@
     .controls { right: 18px; top: 18px; flex-wrap: wrap; justify-content: flex-end; max-width: calc(100vw - 36px); }
     .panel { left: 14px; right: 14px; top: auto; bottom: 14px; width: auto; max-height: 42vh; }
   }
+  @media (max-width: 680px) {
+    html, body {
+      height: auto;
+      min-height: 100%;
+      overflow: auto;
+    }
+    .app {
+      height: auto;
+      min-height: 100svh;
+    }
+    .canvas-wrap {
+      position: relative;
+      height: 54svh;
+      min-height: 360px;
+    }
+    .header {
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      font-size: 8px;
+      letter-spacing: 0.08em;
+      line-height: 1.45;
+    }
+    .controls {
+      left: 12px;
+      right: 12px;
+      top: 42px;
+      justify-content: flex-start;
+      max-width: none;
+      gap: 6px;
+    }
+    .ui-button {
+      min-height: 28px;
+      font-size: 8px;
+      letter-spacing: 0.05em;
+    }
+    .panel {
+      position: relative;
+      left: auto;
+      right: auto;
+      bottom: auto;
+      top: auto;
+      width: auto;
+      max-height: none;
+      margin: 12px;
+      padding: 14px;
+      border-radius: 18px;
+    }
+    .displacement {
+      font-size: 32px;
+    }
+    .data-grid {
+      grid-template-columns: 1fr;
+    }
+    .visual-scales {
+      grid-template-columns: 36px 1fr;
+      gap: 10px;
+    }
+    .bay-icon {
+      width: 74px;
+      height: 74px;
+      grid-column: 2;
+      justify-self: start;
+    }
+    .legend-lines {
+      gap: 10px;
+      font-size: 10px;
+      flex-wrap: wrap;
+    }
+  }
 </style>
 </head>
 <body>

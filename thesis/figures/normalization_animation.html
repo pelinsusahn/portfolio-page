@@ -222,6 +222,50 @@
       bottom: 40px;
     }
   }
+  @media (max-width: 680px) {
+    body {
+      padding: 0;
+      display: block;
+    }
+    .slide {
+      width: 100vw;
+      min-height: 100svh;
+      height: auto;
+      aspect-ratio: auto;
+    }
+    .frame {
+      inset: 10px;
+    }
+    .layout {
+      inset: 18px 14px 108px;
+      grid-template-rows: minmax(240px, auto) 84px minmax(240px, auto);
+      gap: 10px;
+    }
+    .panel {
+      padding: 10px 8px 24px;
+    }
+    .panel-title,
+    .mid-copy {
+      font-size: 13px;
+    }
+    .plot-wrap {
+      inset: 34px 0 12px;
+    }
+    .legend {
+      left: 12px;
+      right: 12px;
+      bottom: 28px;
+      gap: 10px 14px;
+      font-size: 10px;
+      justify-content: flex-start;
+    }
+    .footer {
+      bottom: 10px;
+      padding: 0 12px;
+      font-size: 10px;
+      line-height: 1.35;
+    }
+  }
 </style>
 </head>
 <body>

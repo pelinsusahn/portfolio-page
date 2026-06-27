@@ -670,6 +670,71 @@
     }
   }
 
+  @media (max-width: 680px) {
+    body {
+      padding: 12px;
+      overflow: auto;
+    }
+    .page {
+      width: 100%;
+      min-width: 860px;
+      min-height: auto;
+      gap: 10px;
+    }
+    .stats {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+    .stats-group {
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .matrix {
+      grid-template-columns: 30px minmax(100px, 0.7fr) repeat(5, minmax(118px, 1fr));
+      grid-template-rows: 22px minmax(86px, 0.6fr) repeat(4, minmax(108px, 1fr));
+    }
+    .shape-card {
+      padding: 6px 8px 10px;
+    }
+    .system-card {
+      padding: 8px 10px;
+    }
+    .shape-card .axis-image {
+      max-width: 84px;
+      max-height: 62px;
+    }
+    .system-card .axis-image {
+      max-width: 58px;
+      max-height: 74px;
+    }
+    .axis-label,
+    .axis-kicker,
+    .footer-note,
+    button {
+      font-size: 7px;
+    }
+    .footer {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      justify-items: start;
+    }
+    .legend {
+      flex-wrap: wrap;
+      gap: 8px 14px;
+    }
+    .detail-dialog {
+      width: calc(100vw - 20px);
+      height: min(88svh, 720px);
+    }
+    .animation-caption {
+      left: 14px;
+      right: 14px;
+      width: auto;
+      bottom: 14px;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .matrix-item,
     .matrix-item.revealed {

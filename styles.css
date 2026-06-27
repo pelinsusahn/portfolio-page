@@ -1548,3 +1548,128 @@ img {
     gap: 2px;
   }
 }
+
+@media (max-width: 560px) {
+  .top-header {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .top-nav {
+    gap: 10px 14px;
+  }
+
+  .top-link {
+    font-size: 11px;
+  }
+
+  .hero-stack {
+    padding: 126px 16px 0;
+  }
+
+  .hero-role {
+    font-size: clamp(1.1rem, 6vw, 1.6rem);
+  }
+
+  .hero-name {
+    font-size: clamp(2.7rem, 15vw, 4.4rem);
+    line-height: 0.92;
+  }
+
+  .hero-bubble-stage {
+    top: 170px;
+  }
+
+  .hero-bubble {
+    width: min(78vw, 280px);
+  }
+
+  .hero-aside {
+    width: min(100% - 32px, 320px);
+    margin: 332px 16px 0;
+  }
+
+  .hero-aside p {
+    font-size: 13px;
+  }
+
+  .thesis-entry {
+    left: 10px;
+    bottom: 12px;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .thesis-entry-label {
+    font-size: 10px;
+    line-height: 1.2;
+    letter-spacing: 0.06em;
+  }
+
+  .projects-section {
+    margin-top: -14vh;
+    padding: 14vh 0 56px;
+  }
+
+  .projects-grid {
+    grid-template-columns: 1fr;
+    gap: 34px;
+  }
+
+  .project-tile,
+  .project-tile.is-visible {
+    width: min(100%, 138px);
+  }
+
+  .project-window,
+  .side-window,
+  .cv-window {
+    width: calc(100% - 14px);
+    max-height: calc(100vh - 14px);
+  }
+
+  .window-bar {
+    padding: 14px 12px;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+  }
+
+  .project-window-content,
+  .side-window-content,
+  .cv-window-content {
+    padding: 14px 12px 28px;
+  }
+
+  .project-hero-body h2,
+  .side-copy h2 {
+    font-size: clamp(2rem, 13vw, 3rem);
+  }
+
+  .project-hero-summary,
+  .project-chapter p,
+  .side-copy p,
+  .side-meta p {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .project-gallery-group--duo,
+  .project-gallery-group--trio,
+  .project-gallery-group--multi,
+  .contact-item {
+    grid-template-columns: 1fr;
+  }
+
+  .cv-page {
+    gap: 24px;
+    padding: 24px 18px 28px;
+  }
+
+  .cv-item-head span:last-child,
+  .cv-item-subhead span:last-child,
+  .cv-row-head span:last-child,
+  .cv-row-body span:last-child,
+  .cv-award-row span:last-child {
+    white-space: normal;
+  }
+}

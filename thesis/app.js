@@ -32,7 +32,8 @@
 
       hotspot.style.setProperty("--left-px", `${offsetX + (drawnWidth * x)}px`);
       hotspot.style.setProperty("--top-px", `${offsetY + (drawnHeight * y)}px`);
-      hotspot.style.setProperty("--size-px", `${drawnWidth * size}px`);
+      const minimumSize = window.innerWidth <= 560 ? 52 : window.innerWidth <= 820 ? 46 : 0;
+      hotspot.style.setProperty("--size-px", `${Math.max(drawnWidth * size, minimumSize)}px`);
     });
   }
 

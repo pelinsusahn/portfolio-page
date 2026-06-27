@@ -509,3 +509,78 @@ body {
     inset: -4%;
   }
 }
+
+@media (max-width: 560px) {
+  .scene-frame {
+    height: 100svh;
+  }
+
+  .scene-label {
+    top: 12px;
+    left: 14px;
+    font-size: 9px;
+  }
+
+  .scene-hint {
+    bottom: 10px;
+    gap: 6px;
+  }
+
+  .scene-hint-text {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  .viewer-panel {
+    width: min(100vw, calc(74svh * var(--viewer-ratio-number, 1.6)));
+    max-height: 74svh;
+    border-radius: 16px;
+  }
+
+  .viewer-close {
+    top: 8px;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+    font-size: 22px;
+  }
+
+  .story-panel {
+    min-height: 132vh;
+  }
+
+  .story-panel--text {
+    min-height: 142vh;
+  }
+
+  .story-sticky {
+    padding: 6vh 5vw;
+  }
+
+  .question-copy {
+    font-size: clamp(1.3rem, 7.4vw, 2rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+  }
+
+  .story-intro-copy {
+    bottom: 6vh;
+    width: min(88vw, 360px);
+  }
+
+  .story-intro-strong {
+    font-size: clamp(1.3rem, 7vw, 2rem);
+  }
+
+  .story-intro-regular {
+    font-size: clamp(0.95rem, 4.5vw, 1.15rem);
+    margin-top: 0.4rem;
+  }
+
+  .story-card--html {
+    width: 100vw;
+    max-height: 70svh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}

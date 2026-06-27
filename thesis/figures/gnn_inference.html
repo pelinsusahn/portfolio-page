@@ -353,6 +353,75 @@
     .back-link { right: 30px; }
     .legend { display: none; }
   }
+  @media (max-width: 680px) {
+    html, body {
+      height: auto;
+      min-height: 100%;
+      overflow: auto;
+    }
+    .app {
+      width: 100%;
+      height: auto;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+    }
+    .canvas-wrap {
+      position: relative;
+      height: 52svh;
+      min-height: 360px;
+    }
+    .header {
+      top: 12px;
+      left: 12px;
+      font-size: 8px;
+      letter-spacing: 0.08em;
+    }
+    .back-link {
+      top: 12px;
+      right: 12px;
+      font-size: 8px;
+      letter-spacing: 0.08em;
+    }
+    .panel {
+      position: relative;
+      inset: auto;
+      width: auto;
+      height: auto;
+      max-height: none;
+      margin: 12px 12px 0;
+      padding: 14px;
+      border-radius: 18px;
+    }
+    .building-id {
+      font-size: 28px;
+    }
+    .stage-title {
+      font-size: 14px;
+    }
+    .stage-desc,
+    .stage-caption,
+    .formula-line,
+    .prediction-value {
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .control-cluster {
+      position: relative;
+      left: auto;
+      bottom: auto;
+      transform: none;
+      width: calc(100% - 24px);
+      margin: 12px auto 18px;
+      justify-content: center;
+      flex-wrap: wrap;
+      border-radius: 18px;
+    }
+    .controls {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
 </style>
 </head>
 <body>
