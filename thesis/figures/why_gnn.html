@@ -1,9 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) --> 
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0N6W82MQY1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-0N6W82MQY1');
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Adaptive Topologies — Why GNN?</title>
+<title>Adaptive Topologies â€” Why GNN?</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
@@ -84,7 +93,7 @@
 <div class="scene">
 
   <div class="top-label">
-    <strong>Adaptive Topologies</strong>&nbsp;&nbsp;·&nbsp;&nbsp;06&nbsp;&nbsp;·&nbsp;&nbsp;Why Graph Neural Networks?
+    <strong>Adaptive Topologies</strong>&nbsp;&nbsp;Â·&nbsp;&nbsp;06&nbsp;&nbsp;Â·&nbsp;&nbsp;Why Graph Neural Networks?
   </div>
 
   <!-- Layer 1: structural drawing -->
@@ -110,14 +119,14 @@
 
   <div class="caption">
     <strong id="capTitle">Rectangular moment frame</strong>
-    <span id="capSub">6 stories &nbsp;·&nbsp; 5 × 4 bays &nbsp;·&nbsp; IPE sections</span>
+    <span id="capSub">6 stories &nbsp;Â·&nbsp; 5 Ã— 4 bays &nbsp;Â·&nbsp; IPE sections</span>
   </div>
 
 </div>
 <script>
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // FRAME
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const STORY_H = 3.5;
 const AX = { px: 1.0, py: 0.58, vt: 1.14 };
 const CANVAS = { x0: 80, x1: 820, y0: 44, y1: 568 };
@@ -126,9 +135,9 @@ const F = { stories: 6, bayX: 5, bayY: 4, sX: 6, sY: 6 };
 const COL_W = 6.2;  // column IPE flange spread (screen px)
 const BM_W  = 5.4;  // beam IPE flange spread (screen px)
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // PROJECTION
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function rawPt(ix, iy, lv) {
   const cx = ix * F.sX - F.bayX * F.sX / 2;
   const cy = iy * F.sY - F.bayY * F.sY / 2;
@@ -161,18 +170,18 @@ const project = makeProject();
 
 const f2 = n => n.toFixed(2);
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // MEMBER DRAWING PRIMITIVES
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// Perpendicular normal from a→b
+// Perpendicular normal from aâ†’b
 function perp(a, b, half) {
   const dx = b.x - a.x, dy = b.y - a.y;
   const len = Math.hypot(dx, dy) || 1e-4;
   return { nx: -dy / len * half, ny: dx / len * half };
 }
 
-// Filled white polygon — occludes elements behind this member
+// Filled white polygon â€” occludes elements behind this member
 function memberOcclude(a, b, sw) {
   const { nx, ny } = perp(a, b, sw / 2);
   const pts = [
@@ -216,7 +225,7 @@ function jointMark(p) {
        + `<line class="s-joint" x1="${f2(p.x)}" y1="${f2(p.y-R)}" x2="${f2(p.x)}" y2="${f2(p.y+R)}"/>`;
 }
 
-// Outer silhouette — convex hull of the building mass, offset outward by half the
+// Outer silhouette â€” convex hull of the building mass, offset outward by half the
 // section width so the stroke sits on the outer face of the members, not the centreline.
 function outerSilhouette() {
   const centreline = [
@@ -229,7 +238,7 @@ function outerSilhouette() {
   ];
 
   // Expand the polygon outward by OFFSET pixels using per-vertex miter geometry.
-  // The polygon is CW in SVG space, so the outward normal of direction (dx,dy) is (dy,−dx).
+  // The polygon is CW in SVG space, so the outward normal of direction (dx,dy) is (dy,âˆ’dx).
   const OFFSET = COL_W / 2 + 0.4;
   const n = centreline.length;
   const expanded = centreline.map((curr, i) => {
@@ -245,7 +254,7 @@ function outerSilhouette() {
     const n1x =  d1y / l1,  n1y = -d1x / l1;
     const n2x =  d2y / l2,  n2y = -d2x / l2;
 
-    // Miter offset: curr + 2 * OFFSET * (n1+n2) / |n1+n2|²
+    // Miter offset: curr + 2 * OFFSET * (n1+n2) / |n1+n2|Â²
     const bx = n1x + n2x, by = n1y + n2y;
     const bl2 = bx * bx + by * by;
     if (bl2 < 0.001) return { x: curr.x + n1x * OFFSET, y: curr.y + n1y * OFFSET };
@@ -257,9 +266,9 @@ function outerSilhouette() {
   return `<polygon points="${pts}" class="s-outer"/>`;
 }
 
-// ─────────────────────────────────────────────────────────────
-// BUILD STRUCTURE  (painter's algorithm — back to front)
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// BUILD STRUCTURE  (painter's algorithm â€” back to front)
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildStructure() {
   const members = []; // { depth, markup }
 
@@ -301,7 +310,7 @@ function buildStructure() {
         pushMember(a, b, BM_W, isExtHy(ix));
       }
 
-  // Sort back → front (ascending screen y = further from viewer in this projection)
+  // Sort back â†’ front (ascending screen y = further from viewer in this projection)
   members.sort((a, b) => a.depth - b.depth);
 
   // Joints (depth-sorted, drawn after member lines so crosshairs appear on top)
@@ -319,9 +328,9 @@ function buildStructure() {
        + outerSilhouette();     // single thick outline drawn last (always on top)
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // GRAPH DATA
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildGraph() {
   const nodes = [], edges = [], idx = {};
 
@@ -356,9 +365,9 @@ function buildGraph() {
   return { nodes, edges, idx };
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // DOM SETUP
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById('gStruct').innerHTML = buildStructure();
 
 const { nodes, edges, idx } = buildGraph();
@@ -388,9 +397,9 @@ edges.forEach(([a, b], i) => {
   adj[b].push({ n: a, e: i });
 });
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // COLOUR CONSTANTS
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const C = {
   edgeRest:    '#d4d4d4',
   edgeDim:     '#ebebeb',
@@ -426,9 +435,9 @@ function graphDim() {
   nodes.forEach((_, i) => setNode(i, C.nodeDim, 2.2, null));
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // CAPTION
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function caption(title, sub) {
   capTitle.style.opacity = '0'; capSub.style.opacity = '0';
   setTimeout(() => {
@@ -437,23 +446,23 @@ function caption(title, sub) {
   }, 280);
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // TIMERS
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let timers = [];
 function clr()         { timers.forEach(clearTimeout); timers = []; }
 function after(fn, ms) { const t = setTimeout(fn, ms); timers.push(t); }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // MESSAGE PASSING
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function runMP(done) {
   const srcKey = `${Math.round(F.bayX/2)},${Math.round(F.bayY/2)},0`;
   const src    = idx[srcKey];
 
   graphDim();
   setNode(src, C.nodeActive, 6, 'glow');
-  caption('message passing', 'layer 0 — source node');
+  caption('message passing', 'layer 0 â€” source node');
 
   // BFS
   const visited = new Set([src]);
@@ -473,7 +482,7 @@ function runMP(done) {
     after(() => {
       wave.nodes.forEach(n => setNode(n, C.nodeActive, 3.8, 'glowS'));
       wave.edges.forEach(e => setEdge(e, C.edgeActive, 1.4));
-      caption('message passing', `layer ${hi+1} — ${wave.nodes.length} nodes reached`);
+      caption('message passing', `layer ${hi+1} â€” ${wave.nodes.length} nodes reached`);
     }, t);
     t += 460;
   });
@@ -488,9 +497,9 @@ function runMP(done) {
   after(done, t + 3600);
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // MAIN LOOP
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function cycle() {
   clr();
   graphReset();
@@ -499,9 +508,9 @@ function cycle() {
   svgGraph.style.transition  = 'opacity 1.2s ease';
   svgStruct.style.opacity    = '1';
   svgGraph.style.opacity     = '0';
-  caption('Rectangular moment frame', '6 stories · 5 × 4 bays · IPE sections');
+  caption('Rectangular moment frame', '6 stories Â· 5 Ã— 4 bays Â· IPE sections');
 
-  // Structure hold → fade to graph
+  // Structure hold â†’ fade to graph
   after(() => {
     caption('joints = nodes', 'members = edges');
     svgStruct.style.transition = 'opacity 1.6s ease';

@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) --> 
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0N6W82MQY1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-0N6W82MQY1');
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Adaptive topologies - topology v3 inference</title>
@@ -516,7 +525,7 @@ const FLOW_STAGES = [
     formula:"h_G = pool(h_joint, h_wall, h_slab) + global features", tokens:["joint pool","wall pool","slab pool","global features"] },
   { key:"pred", label:"Multi-head outputs", title:"Multi-head prediction", count:8,
     caption:"The topology v3 heads predict displacement, max drift, x drift, y drift, and stiffness class. Y drift is treated as a secondary output.",
-    formula:"ŷ = {u_max, drift_max, drift_x, drift_y, class}", tokens:["displacement","max drift","x drift","y drift","stiffness class"] }
+    formula:"Å· = {u_max, drift_max, drift_x, drift_y, class}", tokens:["displacement","max drift","x drift","y drift","stiffness class"] }
 ];
 
 let data = null;
